@@ -4,7 +4,7 @@
 
 ### Matching Matters: A Fair Quality–Efficiency Benchmark for Command-Line Agents
 
-Evaluate the deployable **language model × CLI harness** pair—not the model in isolation.
+**Benchmark the pair. Understand the trajectory. Improve the description.**
 
 **Han Chi<sup>1*</sup>, Jiaxin Qi<sup>1*</sup>, Yan Cui<sup>2</sup>, Baisheng Lai<sup>1</sup>, Jianqiang Huang<sup>1,2</sup>**
 
@@ -16,51 +16,51 @@ Evaluate the deployable **language model × CLI harness** pair—not the model i
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Tasks](https://img.shields.io/badge/benchmark-80%20tasks-7c3aed)
 
-[Method](#our-work) · [Results](#main-results) · [Reproduction](#reproduction) · [Artifacts](#released-artifacts)
+[Overview](#overview) · [Results](#results) · [Examples](#description-examples) · [Quick Start](#quick-start) · [Citation](#citation)
 
 </div>
 
-## Our work
+## Overview
 
-Command-line agent performance depends on both the language model and the CLI
-harness that controls tool invocation, context management, and failure
-recovery. Evaluating only the model therefore hides an important deployment
-choice. This work makes the **LM–CLI pair** the unit of evaluation.
+AgentMeter evaluates **language model × CLI harness configurations** on task
+quality and execution efficiency. The same model can behave differently under
+different harnesses: tool use, context management, and recovery all matter.
 
-Our contributions are:
+**AgentMeter** provides the benchmark. **AMS** combines quality, cost budgets,
+and expensive failures. **AgentMeter-Opt** uses source trajectories to diagnose
+description-related friction and construct variants for cross-configuration
+evaluation.
 
-1. **AgentMeter**, a benchmark that evaluates complete LM–CLI configurations
-   on quality and execution efficiency under identical tasks and verifiers.
-2. **AgentMeter Score (AMS)**, which combines budget-sensitive task quality
-   with a penalty for expensive zero-reward executions.
-3. **AgentMeter-Opt**, a trajectory-feedback method that identifies
-   description-related route friction and generates pair-conditioned,
-   task-preserving task descriptions for Self and Cross evaluation.
+<p align="center">
+  <img src="docs/assets/agentmeter_opt_pipeline.png" width="100%" alt="AgentMeter-Opt: public task requirements and source trajectories guide candidate construction, screening, and evaluation across configurations.">
+  <br>
+  <sub>AgentMeter-Opt · Diagnose execution friction, screen descriptions, and evaluate a shared set of variants.</sub>
+</p>
 
-| Benchmark component | Scale | Purpose |
-|:--|--:|:--|
-| [Full benchmark](configs/task_lists/full80.txt) | 80 tasks | Deployment-level LM–CLI evaluation |
-| [Core subset](configs/task_lists/core30.public.txt) | 30 tasks × 28 pairs | Complete 7-model × 4-CLI comparison |
-| AgentMeter-Opt | 16 tasks, 320 main + 64 Generic executions | Original/Self/Cross; Pooled and Adapted-1 are derived controls |
+| Benchmark | Configuration grid | Description study |
+|:--:|:--:|:--:|
+| **80 tasks** in Full80 | **7 models × 4 CLIs** on Core30 | **16 tasks × 4 source pairs** |
+| [Frozen task selection](configs/task_lists/full80.txt) | [30-task core subset](configs/task_lists/core30.public.txt) | [16 selected rewrite examples](artifacts/agentmeter_opt_final16/README.md) |
 
-## Main results
+The method targets task-preserving rewrites. Automated screening is not a
+proof of semantic equivalence; the example catalog documents intervention
+boundaries.
 
-These are manuscript results. Exact paper AMS and Core/Full table reproduction
-still require the records and settings listed in [reproduction scope](docs/reproduction_status.md).
+## Results
 
-The central result is simple: **there is no universally best CLI**. The same
-model changes substantially across harnesses, and pass rate, cost, and the
-AgentMeter Score (AMS) select different winners.
+**Different objectives select different LM–CLI pairs.** On Core30,
+Qwen3.6-Plus × Kimi Code CLI achieves the highest AMS, while
+Qwen3.6-Plus × Codex CLI has the lowest tokens and USD per pass.
 
-### Core30 highlights
-
-| Objective | Best LM–CLI pair | Result |
+| Core30 objective | Configuration | Result |
 |:--|:--|--:|
-| Highest AMS ↑ | Qwen3.6-Plus × Kimi CLI | **0.525** |
-| Most passes ↑ | GLM-5.1 × Qwen Code | **18/30** |
-| Most passes ↑ | Gemini 3.5 Flash × Codex CLI | **18/30** |
+| Highest AMS ↑ | Qwen3.6-Plus × Kimi Code CLI | **0.525** |
+| Most passes ↑ | GLM-5.1 × Qwen Code / Gemini 3.5 Flash × Codex CLI | **18/30 each** |
 | Lowest tokens per pass ↓ | Qwen3.6-Plus × Codex CLI | **0.48M** |
 | Lowest USD per pass ↓ | Qwen3.6-Plus × Codex CLI | **$0.074** |
+
+<details>
+<summary>View selected Core30 configurations and rank agreement</summary>
 
 Selected configurations from the complete 28-pair grid:
 
@@ -76,23 +76,11 @@ Selected configurations from the complete 28-pair grid:
 Core and Full rankings remain strongly aligned on their shared configurations
 (Spearman ρ = **0.835**, Kendall τb = **0.683**).
 
-## AgentMeter-Opt
+</details>
 
-The main matrix contains 64 Original, 64 Self and 192 Cross executions.
-Generic adds 64 public-only control executions. Pooled aggregates source
-outcomes, and Adapted-1 samples 10,000 offline source assignments.
-See the [paper protocol and release scope](docs/paper_alignment.md).
-
-AgentMeter-Opt diagnoses route friction from an Original trajectory, proposes a
-bounded rewrite of `instruction.md`, applies a task-preservation safety gate,
-and freezes the selected description before target evaluation. Tests,
-environments, verifiers, solutions, and input artifacts are unchanged.
-
-<p align="center">
-  <img src="docs/assets/agentmeter_opt_pipeline.png" width="820" alt="AgentMeter-Opt pipeline">
-</p>
-
-### Description-condition results
+**Description choice also changes the comparison.** Source-balanced Pooled
+evaluation raises macro AMS from **0.333 to 0.458** in the manuscript;
+Cross-only reaches **0.434**.
 
 | Target pair | Original AMS | Pooled AMS | Cross-only AMS | Δ Pooled |
 |:--|--:|--:|--:|--:|
@@ -102,25 +90,8 @@ environments, verifiers, solutions, and input artifacts are unchanged.
 | GLM × Qwen | 0.389 | **0.446** | 0.429 | +0.057 |
 | **Macro** | **0.333** | **0.458** | **0.434** | **+0.125** |
 
-Cross-transfer effectiveness ranges from **37.5% to 75.0%**, demonstrating
-that description transfer is directional rather than universal. The paper's
-qualitative examples are available in
-[`docs/assets/description_examples.png`](docs/assets/description_examples.png).
-This example release contains **16 selected source-conditioned descriptions**
-and archived Self/Cross result tables under
-[`artifacts/agentmeter_opt_final16/`](artifacts/agentmeter_opt_final16/).
-
-## Reproduction
-
-Start by recomputing the bundled descriptive Self/Cross tables (no API needed):
-
-```bash
-python scripts/reproduce_artifact_table.py
-```
-
-Archived CSVs retain CNY for provenance; the table command displays **USD**
-using the manuscript's frozen rate, **1 CNY = 0.1471 USD**. Cached input is
-already included in input tokens. This descriptive command does not compute AMS.
+<details>
+<summary>View archived Self rewards and costs in USD</summary>
 
 | Self target (16 tasks each) | Original reward | Optimized reward | Original cost (USD) | Optimized cost (USD) |
 |:--|--:|--:|--:|--:|
@@ -133,7 +104,51 @@ Source: [archived Self summary](artifacts/agentmeter_opt_final16/results/self_su
 Reward is the mean verifier reward; cost is the total over all 16 tasks,
 including failures. Cross results are printed separately by the same script.
 
-### 1. Install AgentMeter
+Costs use the manuscript's fixed rate, **1 CNY = 0.1471 USD**; original CSVs
+retain CNY. Cached input is already included in input tokens.
+
+</details>
+
+<details>
+<summary>Evaluation conditions and reproduction boundaries</summary>
+
+The main matrix contains 64 Original, 64 Self and 192 Cross executions.
+Generic adds 64 public-only control executions. Pooled aggregates source
+outcomes; Adapted-1 samples 10,000 offline source assignments.
+
+The Core30 and AMS tables above report manuscript numbers. The released
+descriptive tables can be regenerated from archived CSVs. Exact historical
+AMS reconstruction still needs effort assignments, full-precision calibration
+and missing run-level records. The repository implements the manuscript
+formula with its published rounded calibration.
+
+[Scoring protocol](docs/paper_alignment.md) ·
+[Release and verification scope](docs/reproduction_status.md)
+
+</details>
+
+## Description examples
+
+A compact example from **regex-log · Qwen3.6-Plus × Codex CLI**:
+
+| Original excerpt | Rewritten excerpt |
+|:--|:--|
+| Save your regex in `/app/regex.txt`. | Save your regex in `/app/regex.txt`. The file must contain only the raw regex string, with no extra text, markdown, or explanations. |
+
+The rewrite makes the output-file content explicit, consistent with the
+original public Python example that reads and applies the file as a pattern.
+This illustrates a textual change; it does not establish a causal cost saving.
+
+[Compare the complete pair](artifacts/agentmeter_opt_final16/descriptions/qwen36_codex/regex-log/)
+· [Browse all 16 selected examples](artifacts/agentmeter_opt_final16/README.md)
+
+Examples cover **13 tasks and all four source configurations**. They retain
+the wording used in the experiments; the complete 64-description set is not
+included in this release.
+
+## Quick start
+
+**1. Install the repository**
 
 ```bash
 git clone https://github.com/bothan66/AgentMeter.git
@@ -143,13 +158,29 @@ source .venv/bin/activate
 python -m pip install -e '.[opt]'
 ```
 
-Install Docker and the pinned Harbor checkout following
-[execution dependencies](docs/external_dependencies.md). The released patch
-preserves the four locally modified adapters; an arbitrary Harbor installation
-is not equivalent. Harbor installs the target CLI inside each task container.
-CLIProxyAPI is optional.
+**2. Inspect the released results**
 
-### 2. Configure a model–CLI target
+```bash
+python scripts/reproduce_artifact_table.py
+```
+
+This command needs no API or Docker and displays archived descriptive results
+in USD. For manuscript scoring with your own task-level records:
+
+```bash
+python scripts/compute_paper_ams.py --runs condition.csv
+```
+
+Required columns: `task_id,stratum,reward,cost_usd`.
+[Input conventions and calibration](docs/paper_alignment.md)
+
+**3. Run a released example**
+
+Install Docker and the [pinned, patched Harbor](docs/external_dependencies.md),
+then configure the target using the section below.
+
+<details>
+<summary>Configure provider credentials and the target model–CLI pair</summary>
 
 ```bash
 cp .env.example .env
@@ -171,7 +202,20 @@ export AGENTMETER_AGENT_VERSION=0.153.0
 Sanitized OpenAI Responses, Chat Completions, Anthropic Messages, and
 CLIProxyAPI templates are provided in `configs/` and `integrations/`.
 
-### 3. Reproduce Core30 and Full80
+</details>
+
+```bash
+bash scripts/run_final16_condition.sh qwen36_codex original regex-log
+bash scripts/run_final16_condition.sh qwen36_codex optimized regex-log
+```
+
+`qwen36_codex` selects the **description source**; `AGENTMETER_MODEL` and
+`AGENTMETER_AGENT` select the **evaluation target**. Each invocation creates
+a separate default output directory. If setting `AGENTMETER_JOBS_DIR`
+explicitly, use a fresh directory per run.
+
+<details>
+<summary>Run Core30 or Full80</summary>
 
 The exact task selections are frozen in:
 
@@ -195,22 +239,10 @@ records. Compute the manuscript-defined score using
 task: `task_id,stratum,reward,cost_usd`. See [scoring protocol](docs/paper_alignment.md)
 for required effort labels, rounded calibration limits, and historical data gaps.
 
-### 4. Run selected AgentMeter-Opt examples
+</details>
 
-The repository includes 16 task environments and 16 selected optimized
-descriptions. Full 64-description replay is not included in this release.
-See the [example catalog](artifacts/agentmeter_opt_final16/README.md).
-Replay a released example on a target pair with:
-
-```bash
-# One released example; omit the task to run this source's released examples.
-bash scripts/run_final16_condition.sh \
-  qwen36_codex optimized regex-log
-```
-
-Here, `qwen36_codex` selects the **description source**; `AGENTMETER_MODEL` and
-`AGENTMETER_AGENT` select the **evaluation target**. This supports both Self
-and Cross conditions without storing duplicate task copies.
+<details>
+<summary>Generate a new trajectory-guided description</summary>
 
 To regenerate a description from an Original trajectory rather than replaying
 a released one:
@@ -236,29 +268,26 @@ verifier before reward-first, cost-second selection, then freeze the selected
 description before Self or Cross evaluation. Automated preservation gates are
 heuristics, not proof of semantic equivalence.
 
-The execution and scoring path is:
+</details>
 
-```text
-task + LM/CLI config → Harbor/Docker → CLI agent → provider API
-                    → trajectory + verifier → reward/tokens/cost → AMS
-```
+## Repository guide
 
-## Released artifacts
-
-| Artifact | Location |
+| Resource | Entry |
 |:--|:--|
-| Full80 task selection | `configs/task_lists/full80.txt` |
-| Core30 task selection | `configs/task_lists/core30.public.txt` |
-| Final16 executable tasks | `benchmark_tasks/` |
-| 16 selected Original/optimized description pairs | `artifacts/agentmeter_opt_final16/descriptions/` |
-| Self and Cross results | `artifacts/agentmeter_opt_final16/results/` |
-| AgentMeter-Opt implementation | `agentmeter_opt/` |
+| Benchmark selections | [Full80](configs/task_lists/full80.txt) · [Core30](configs/task_lists/core30.public.txt) |
+| 16 executable task bundles | [benchmark_tasks/](benchmark_tasks/) |
+| Selected descriptions and archived results | [artifacts/agentmeter_opt_final16/](artifacts/agentmeter_opt_final16/) |
+| Description optimizer | [agentmeter_opt/](agentmeter_opt/) |
+| Manuscript scoring | [paper.py](src/agentmeter/metrics/paper.py) · [protocol](docs/paper_alignment.md) |
+| Execution dependencies | [Harbor and provider setup](docs/external_dependencies.md) |
 
-Raw trajectories, credentials, private provider endpoints, and duplicated
-target-side task copies are intentionally excluded. They are regenerated by
-the commands above and written to ignored output directories.
+Credentials, runtime caches, and raw trajectories are excluded from version
+control. Fresh runs write to ignored output directories.
 
 ## Citation
+
+<details>
+<summary>BibTeX</summary>
 
 ```bibtex
 @article{chi2026matching,
@@ -268,8 +297,10 @@ the commands above and written to ignored output directories.
 }
 ```
 
+</details>
+
 ## License
 
-AgentMeter code is released under the [MIT License](LICENSE). The Harbor patch
-retains its [Apache-2.0 license](integrations/harbor/LICENSE). Bundled task and
-data terms are described in [third-party notices](THIRD_PARTY_NOTICES.md).
+AgentMeter code: [MIT](LICENSE). Harbor compatibility patch:
+[Apache-2.0](integrations/harbor/LICENSE). Benchmark tasks and data retain
+their upstream terms; see [third-party notices](THIRD_PARTY_NOTICES.md).
