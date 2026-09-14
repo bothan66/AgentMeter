@@ -148,6 +148,11 @@ included in this release.
 
 ## Quick start
 
+Requires **Python 3.11+**. Live evaluation additionally needs Docker access,
+a provider API key, and network access for task images and CLI dependencies.
+Install the [pinned Harbor runtime and patches](docs/external_dependencies.md#harbor)
+before running tasks. API calls incur provider charges.
+
 **1. Install the repository**
 
 ```bash
@@ -179,15 +184,6 @@ Required columns: `task_id,stratum,reward,cost_usd`.
 Install Docker and the [pinned, patched Harbor](docs/external_dependencies.md),
 then configure the target using the section below.
 
-Check your Responses endpoint before starting a task:
-
-```bash
-python scripts/probe_responses.py
-```
-
-The probe uses the same exported provider credentials and model setting.
-[GLM routing example](integrations/cliproxyapi/glm.example.yaml)
-
 <details>
 <summary>Configure provider credentials and the target model–CLI pair</summary>
 
@@ -213,15 +209,36 @@ CLIProxyAPI templates are provided in `configs/` and `integrations/`.
 
 </details>
 
+After exporting the configuration, check the endpoint and run both conditions:
+
 ```bash
+python scripts/probe_responses.py
 bash scripts/run_final16_condition.sh qwen36_codex original regex-log
 bash scripts/run_final16_condition.sh qwen36_codex optimized regex-log
 ```
+
+For GLM-5.3-Flash, use the [proxy template](integrations/cliproxyapi/glm.example.yaml)
+and set `AGENTMETER_MODEL=glm5.3-flash`. The base URL must also be reachable
+from the task container; `127.0.0.1` inside a container refers to that container.
 
 `qwen36_codex` selects the **description source**; `AGENTMETER_MODEL` and
 `AGENTMETER_AGENT` select the **evaluation target**. Each invocation creates
 a separate default output directory. If setting `AGENTMETER_JOBS_DIR`
 explicitly, use a fresh directory per run.
+
+**Outputs:** each run is saved under `jobs/` (or `AGENTMETER_JOBS_DIR`).
+Within its task trial directory:
+
+| File | Contents |
+|:--|:--|
+| `result.json` | Verifier reward, token usage, timing and exception status |
+| `agent/trajectory.json` | Structured agent trajectory |
+| `agent/codex.txt` | Raw Codex execution log |
+| `verifier/test-stdout.txt` | Individual test outcomes |
+
+A real GLM-5.3-Flash × Codex 0.153.0 smoke run completed the API → tools →
+verifier → saved-results workflow. See [validation details](docs/reproduction_status.md#runtime-setup)
+for the tested task and outcome.
 
 <details>
 <summary>Run Core30 or Full80</summary>

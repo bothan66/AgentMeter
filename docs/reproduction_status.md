@@ -34,8 +34,20 @@ adequate space; Docker layer storage is configured separately.
 The real API self-check passed with GLM-5.3-Flash through CLIProxyAPI on
 2026-09-14: HTTP 200, completed response with output text, 17 input and 85
 output tokens. Run `python scripts/probe_responses.py` with provider variables
-exported to check your own endpoint. The Harbor task rerun is being verified;
-API connectivity and full task verification are separate checks.
+exported to check your own endpoint.
+
+The `markdown-table-generator` Original smoke run also completed on
+2026-09-14 with GLM-5.3-Flash × Codex 0.153.0 through CLIProxyAPI.
+Harbor recorded no runtime exception and saved the trajectory, usage and
+verifier output. Total elapsed time was approximately 10 minutes 36 seconds,
+including about 4 minutes 10 seconds for CLI setup and 3 minutes 44 seconds
+for verification (mostly dependency downloads). Usage was 77,952 input tokens
+(including 1,024 cached) and 4,953 output tokens.
+
+The verifier passed 10/11 checks and assigned reward 0: its summary test
+expects `6,219,500`, whereas the generated report and agent's CSV-sum check
+give `6,419,800`. The bundled verifier remains unchanged. This run validates
+execution and result recording; it is not an additional paper result.
 
 `provider-auth.patch` configures the credential environment variable and
 preserves full custom-provider model IDs. The validated GLM route uses
