@@ -1,0 +1,485 @@
+diff --git a/src/harbor/agents/installed/claude_code.py b/src/harbor/agents/installed/claude_code.py
+index 0fb1e5a9..f6d1f780 100644
+--- a/src/harbor/agents/installed/claude_code.py
++++ b/src/harbor/agents/installed/claude_code.py
+@@ -8,6 +8,7 @@ from harbor.agents.installed.base import (
+     BaseInstalledAgent,
+     CliFlag,
+     EnvVar,
++    NonZeroAgentExitCodeError,
+     with_prompt_template,
+ )
+ from harbor.environments.base import BaseEnvironment
+@@ -107,16 +108,39 @@ class ClaudeCode(BaseInstalledAgent):
+         return text
+ 
+     async def install(self, environment: BaseEnvironment) -> None:
+-        # Install system packages (root)
++        # Fast path: if /opt/agent-runtime is mounted with claude.exe (ELF
++        # self-contained binary, no node needed), just symlink and skip.
++        try:
++            await self.exec_as_root(
++                environment,
++                command=(
++                    "set -e; "
++                    "CLAUDE_BIN=/opt/agent-runtime/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe; "
++                    "test -x \"$CLAUDE_BIN\" || exit 99; "
++                    "\"$CLAUDE_BIN\" --version >/dev/null 2>&1 || exit 99; "
++                    "ln -sf \"$CLAUDE_BIN\" /usr/local/bin/claude; "
++                    "claude --version"
++                ),
++                env={"DEBIAN_FRONTEND": "noninteractive"},
++            )
++            return
++        except NonZeroAgentExitCodeError:
++            pass
++
++        # Install system packages (root). Skip nodejs/npm install if already
++        # present (avoids conflict with images that pre-install nodejs from
++        # NodeSource etc.).
+         await self.exec_as_root(
+             environment,
+             command=(
+-                "if command -v apk &> /dev/null; then"
++                "if command -v npm &>/dev/null; then"
++                "  echo '[setup] npm already present, skipping nodejs/npm install';"
++                " elif command -v apk &> /dev/null; then"
+                 "  apk add --no-cache curl bash nodejs npm;"
+                 " elif command -v apt-get &> /dev/null; then"
+-                "  apt-get update && apt-get install -y curl;"
++                "  apt-get update && apt-get install -y curl nodejs npm;"
+                 " elif command -v yum &> /dev/null; then"
+-                "  yum install -y curl;"
++                "  yum install -y curl nodejs npm;"
+                 " else"
+                 '  echo "Warning: No known package manager found, assuming curl is available" >&2;'
+                 " fi"
+@@ -129,7 +153,7 @@ class ClaudeCode(BaseInstalledAgent):
+             environment,
+             command=(
+                 "set -euo pipefail; "
+-                "if command -v apk &> /dev/null; then"
++                "if command -v npm &> /dev/null; then"
+                 f"  npm install -g @anthropic-ai/claude-code{'@' + self._version if self._version else ''};"
+                 " else"
+                 f"  curl -fsSL https://claude.ai/install.sh | bash -s --{version_flag};"
+diff --git a/src/harbor/agents/installed/codex.py b/src/harbor/agents/installed/codex.py
+index 764c7cf4..eb2095fd 100644
+--- a/src/harbor/agents/installed/codex.py
++++ b/src/harbor/agents/installed/codex.py
+@@ -6,6 +6,7 @@ from typing import Any, Literal
+ from harbor.agents.installed.base import (
+     BaseInstalledAgent,
+     CliFlag,
++    NonZeroAgentExitCodeError,
+     with_prompt_template,
+ )
+ from harbor.environments.base import BaseEnvironment
+@@ -70,16 +71,48 @@ class Codex(BaseInstalledAgent):
+         return text
+ 
+     async def install(self, environment: BaseEnvironment) -> None:
+-        # Install system packages (root)
++        # Fast path: if /opt/agent-runtime is mounted with a compatible Node
++        # and codex pre-installed, just symlink and skip npm install entirely.
++        # Falls through on any error (e.g. mount missing, musl libc mismatch).
++        try:
++            await self.exec_as_root(
++                environment,
++                command=(
++                    "set -e; "
++                    "test -x /opt/agent-runtime/bin/codex || exit 99; "
++                    "/opt/agent-runtime/bin/node --version >/dev/null 2>&1 || exit 99; "
++                    "ln -sf /opt/agent-runtime/bin/node /usr/local/bin/node; "
++                    "ln -sf /opt/agent-runtime/bin/codex /usr/local/bin/codex; "
++                    "if ! command -v rg >/dev/null 2>&1; then "
++                    "  if command -v apt-get >/dev/null; then apt-get update -qq && apt-get install -y ripgrep >/dev/null || true; "
++                    "  elif command -v apk >/dev/null; then apk add --no-cache ripgrep >/dev/null || true; "
++                    "  elif command -v yum >/dev/null; then yum install -y ripgrep >/dev/null || true; fi; "
++                    "fi; "
++                    "codex --version"
++                ),
++                env={"DEBIAN_FRONTEND": "noninteractive"},
++            )
++            return
++        except NonZeroAgentExitCodeError:
++            pass
++
++        # Install system packages (root). Skip nodejs/npm install if already
++        # present (avoids conflict with images that pre-install nodejs from
++        # NodeSource, e.g. threejs / cuda-based images).
+         await self.exec_as_root(
+             environment,
+             command=(
+-                "if ldd --version 2>&1 | grep -qi musl || [ -f /etc/alpine-release ]; then"
++                "if command -v npm &>/dev/null; then"
++                "  echo '[setup] npm already present, installing only ripgrep';"
++                "  if command -v apk &>/dev/null; then apk add --no-cache ripgrep; "
++                "  elif command -v apt-get &>/dev/null; then apt-get update && apt-get install -y ripgrep; "
++                "  elif command -v yum &>/dev/null; then yum install -y ripgrep; fi;"
++                " elif ldd --version 2>&1 | grep -qi musl || [ -f /etc/alpine-release ]; then"
+                 "  apk add --no-cache curl bash nodejs npm ripgrep;"
+                 " elif command -v apt-get &>/dev/null; then"
+-                "  apt-get update && apt-get install -y curl ripgrep;"
++                "  apt-get update && apt-get install -y curl nodejs npm ripgrep;"
+                 " elif command -v yum &>/dev/null; then"
+-                "  yum install -y curl ripgrep;"
++                "  yum install -y curl nodejs npm ripgrep;"
+                 " else"
+                 '  echo "Warning: No known package manager found, assuming curl is available" >&2;'
+                 " fi"
+@@ -93,13 +126,20 @@ class Codex(BaseInstalledAgent):
+             command=(
+                 "set -euo pipefail; "
+                 "if ldd --version 2>&1 | grep -qi musl || [ -f /etc/alpine-release ]; then"
++                "  npm config set registry https://registry.npmmirror.com &&"
++                f"  npm install -g @openai/codex{version_spec};"
++                " elif command -v npm &>/dev/null; then"
++                "  npm config set registry https://registry.npmmirror.com &&"
+                 f"  npm install -g @openai/codex{version_spec};"
+                 " else"
+-                "  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash &&"
++                "  export NVM_NODEJS_ORG_MIRROR=https://npmmirror.com/mirrors/node/ &&"
++                "  git config --global url.'https://ghfast.top/https://github.com/'.insteadOf 'https://github.com/' 2>/dev/null || true &&"
++                "  curl -o- https://ghfast.top/https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash &&"
+                 '  export NVM_DIR="$HOME/.nvm" &&'
+                 '  \\. "$NVM_DIR/nvm.sh" || true &&'
+                 "  command -v nvm &>/dev/null || { echo 'Error: NVM failed to load' >&2; exit 1; } &&"
+                 "  nvm install 22 && nvm alias default 22 && npm -v &&"
++                "  npm config set registry https://registry.npmmirror.com &&"
+                 f"  npm install -g @openai/codex{version_spec};"
+                 " fi && "
+                 "codex --version"
+@@ -505,19 +545,37 @@ class Codex(BaseInstalledAgent):
+             completion_tokens = total_usage.get("output_tokens")
+             reasoning_tokens = total_usage.get("reasoning_output_tokens")
+             cached_tokens = total_usage.get("cached_input_tokens")
++            cache_read_tokens = (
++                total_usage.get("cache_read_input_tokens")
++                or total_usage.get("cached_input_tokens")
++                or 0
++            )
++            cache_creation_tokens = (
++                total_usage.get("cache_creation_input_tokens")
++                or total_usage.get("input_cache_creation")
++                or 0
++            )
+             overall_tokens = total_usage.get("total_tokens")
+ 
++            extra = {
++                "reasoning_output_tokens": reasoning_tokens,
++                "total_tokens": overall_tokens,
++                "last_token_usage": info.get("last_token_usage"),
++            }
++            if cache_read_tokens:
++                extra["total_cache_read_input_tokens"] = cache_read_tokens
++                extra["cache_read_input_tokens"] = cache_read_tokens
++            if cache_creation_tokens:
++                extra["total_cache_creation_input_tokens"] = cache_creation_tokens
++                extra["cache_creation_input_tokens"] = cache_creation_tokens
++
+             total_metrics = FinalMetrics(
+                 total_prompt_tokens=prompt_tokens if prompt_tokens else None,
+                 total_completion_tokens=completion_tokens or None,
+                 total_cached_tokens=cached_tokens or None,
+                 total_cost_usd=info.get("total_cost") or info.get("cost_usd"),
+                 total_steps=len(steps),
+-                extra={
+-                    "reasoning_output_tokens": reasoning_tokens,
+-                    "total_tokens": overall_tokens,
+-                    "last_token_usage": info.get("last_token_usage"),
+-                },
++                extra=extra,
+             )
+             break
+ 
+@@ -586,11 +644,30 @@ class Codex(BaseInstalledAgent):
+         )
+ 
+     def _build_register_mcp_servers_command(self) -> str | None:
+-        """Return a shell command that writes MCP config to $CODEX_HOME/config.toml."""
+-        if not self.mcp_servers:
++        """Return a shell command that writes config to $CODEX_HOME/config.toml.
++
++        Includes MCP server entries and, when OPENAI_BASE_URL is set, a custom
++        model provider block so Codex routes requests to the third-party relay.
++        """
++        base_url = self._get_env("OPENAI_BASE_URL")
++        if not self.mcp_servers and not base_url:
+             return None
++
+         lines: list[str] = []
+-        for server in self.mcp_servers:
++
++        if base_url:
++            wire_api = self._get_env("CODEX_WIRE_API") or "responses"
++            lines += [
++                'model_provider = "custom_relay"',
++                "",
++                "[model_providers.custom_relay]",
++                'name = "custom_relay"',
++                f'base_url = "{base_url}"',
++                f'wire_api = "{wire_api}"',
++                "",
++            ]
++
++        for server in self.mcp_servers or []:
+             lines.append(f"[mcp_servers.{server.name}]")
+             if server.transport == "stdio":
+                 cmd_parts = [server.command] + server.args if server.command else []
+@@ -598,6 +675,7 @@ class Codex(BaseInstalledAgent):
+             else:
+                 lines.append(f'url = "{server.url}"')
+             lines.append("")
++
+         escaped_config = shlex.quote("\n".join(lines))
+         return f'echo {escaped_config} > "$CODEX_HOME/config.toml"'
+ 
+@@ -672,11 +750,14 @@ class Codex(BaseInstalledAgent):
+ 
+         setup_command = ""
+         if not auth_json_path:
+-            # Write a synthetic auth.json for API key auth
++            # Write a synthetic auth.json for API key auth, including OPENAI_BASE_URL if set
++            base_url_line = ""
++            if self._get_env("OPENAI_BASE_URL"):
++                base_url_line = ',\n  "OPENAI_BASE_URL": "${OPENAI_BASE_URL}"'
+             setup_command += (
+                 "mkdir -p /tmp/codex-secrets\n"
+                 "cat >/tmp/codex-secrets/auth.json <<EOF\n"
+-                '{\n  "OPENAI_API_KEY": "${OPENAI_API_KEY}"\n}\nEOF\n'
++                f'{{\n  "OPENAI_API_KEY": "${{OPENAI_API_KEY}}"{base_url_line}\n}}\nEOF\n'
+                 'ln -sf /tmp/codex-secrets/auth.json "$CODEX_HOME/auth.json"\n'
+             )
+ 
+@@ -684,9 +765,9 @@ class Codex(BaseInstalledAgent):
+         if skills_command:
+             setup_command += f"\n{skills_command}"
+ 
+-        mcp_command = self._build_register_mcp_servers_command()
+-        if mcp_command:
+-            setup_command += f"\n{mcp_command}"
++        config_toml_command = self._build_register_mcp_servers_command()
++        if config_toml_command:
++            setup_command += f"\n{config_toml_command}"
+ 
+         if setup_command.strip():
+             await self.exec_as_agent(
+@@ -694,6 +775,14 @@ class Codex(BaseInstalledAgent):
+                 command=setup_command,
+                 env=env,
+             )
++        unified_exec_flag = ""
++        if (self._get_env("CODEX_ENABLE_UNIFIED_EXEC") or "1").lower() not in {
++            "0",
++            "false",
++            "no",
++            "off",
++        }:
++            unified_exec_flag = "--enable unified_exec "
+         try:
+             await self.exec_as_agent(
+                 environment,
+@@ -704,7 +793,7 @@ class Codex(BaseInstalledAgent):
+                     "--skip-git-repo-check "
+                     f"--model {model} "
+                     "--json "
+-                    "--enable unified_exec "
++                    f"{unified_exec_flag}"
+                     f"{cli_flags_arg}"
+                     "-- "  # end of flags
+                     f"{escaped_instruction} "
+diff --git a/src/harbor/agents/installed/kimi_cli.py b/src/harbor/agents/installed/kimi_cli.py
+index 9d446448..88978c48 100644
+--- a/src/harbor/agents/installed/kimi_cli.py
++++ b/src/harbor/agents/installed/kimi_cli.py
+@@ -125,6 +125,33 @@ class KimiCli(BaseInstalledAgent):
+         return AgentName.KIMI_CLI.value
+ 
+     async def install(self, environment: BaseEnvironment) -> None:
++        # Fast path: if /opt/agent-runtime/uv-tools/kimi is pre-mounted with a
++        # built kimi-cli + standalone cpython-3.13, symlink them into the
++        # canonical uv dirs and skip the network-heavy uv tool install.
++        # Saves ~5-10 min per trial and avoids network-flake exit-7 failures.
++        try:
++            await self.exec_as_root(
++                environment,
++                command=(
++                    "set -e; "
++                    "test -x /opt/agent-runtime/uv-tools/kimi/kimi-cli/bin/kimi || exit 99; "
++                    "PY_BUNDLE=/opt/agent-runtime/uv-tools/kimi/"
++                    "cpython-3.13-linux-x86_64-gnu; "
++                    'test -x "$PY_BUNDLE/bin/python3.13" || exit 99; '
++                    "mkdir -p /root/.local/share/uv/python /root/.local/share/uv/tools /root/.local/bin; "
++                    "ln -sf /opt/agent-runtime/uv-tools/kimi/kimi-cli /root/.local/share/uv/tools/kimi-cli; "
++                    # kimi venv shebang resolves to this absolute path, so make
++                    # it valid by symlinking the bundled cpython there.
++                    'ln -sf "$PY_BUNDLE" /root/.local/share/uv/python/cpython-3.13.13-linux-x86_64-gnu; '
++                    "ln -sf /opt/agent-runtime/uv-tools/kimi/kimi-cli/bin/kimi /root/.local/bin/kimi; "
++                    "/root/.local/bin/kimi --version"
++                ),
++                env={"DEBIAN_FRONTEND": "noninteractive"},
++            )
++            return
++        except NonZeroAgentExitCodeError:
++            pass
++
+         await self.exec_as_root(
+             environment,
+             command="apt-get update && apt-get install -y curl",
+@@ -422,6 +449,7 @@ class KimiCli(BaseInstalledAgent):
+         total_prompt = 0
+         total_completion = 0
+         total_cached = 0
++        total_cache_creation = 0
+ 
+         for idx, ws in enumerate(wire_steps, start=1):
+             message = "".join(ws.text_parts) or "(tool use)"
+@@ -468,9 +496,13 @@ class KimiCli(BaseInstalledAgent):
+                 total_prompt += prompt_tokens
+                 total_completion += output_tok
+                 total_cached += cache_read
++                total_cache_creation += cache_creation
+ 
+                 extra: dict[str, Any] = {}
++                if cache_read:
++                    extra["cache_read_input_tokens"] = cache_read
+                 if cache_creation:
++                    extra["cache_creation_input_tokens"] = cache_creation
+                     extra["input_cache_creation"] = cache_creation
+                 metrics = Metrics(
+                     prompt_tokens=prompt_tokens,
+@@ -499,12 +531,21 @@ class KimiCli(BaseInstalledAgent):
+         if not steps:
+             return None
+ 
++        final_extra: dict[str, Any] = {}
++        if total_cached:
++            final_extra["total_cache_read_input_tokens"] = total_cached
++            final_extra["cache_read_input_tokens"] = total_cached
++        if total_cache_creation:
++            final_extra["total_cache_creation_input_tokens"] = total_cache_creation
++            final_extra["cache_creation_input_tokens"] = total_cache_creation
++
+         final_metrics = FinalMetrics(
+             total_prompt_tokens=total_prompt or None,
+             total_completion_tokens=total_completion or None,
+             total_cached_tokens=total_cached or None,
+             total_cost_usd=None,
+             total_steps=len(steps),
++            extra=final_extra or None,
+         )
+ 
+         return Trajectory(
+diff --git a/src/harbor/agents/installed/qwen_code.py b/src/harbor/agents/installed/qwen_code.py
+index a974dfa5..62de47d1 100644
+--- a/src/harbor/agents/installed/qwen_code.py
++++ b/src/harbor/agents/installed/qwen_code.py
+@@ -6,6 +6,7 @@ from typing import Any
+ 
+ from harbor.agents.installed.base import (
+     BaseInstalledAgent,
++    NonZeroAgentExitCodeError,
+     with_prompt_template,
+     EnvVar,
+ )
+@@ -49,26 +50,75 @@ class QwenCode(BaseInstalledAgent):
+         return AgentName.QWEN_CODE.value
+ 
+     def get_version_command(self) -> str | None:
+-        return ". ~/.nvm/nvm.sh; qwen --version"
++        return "qwen --version"
+ 
+     async def install(self, environment: BaseEnvironment) -> None:
++        # Fast path: if /opt/agent-runtime is mounted with qwen + node and
++        # cli.js is pre-patched, just symlink and skip npm install.
++        try:
++            await self.exec_as_root(
++                environment,
++                command=(
++                    "set -e; "
++                    "test -x /opt/agent-runtime/bin/qwen || exit 99; "
++                    "/opt/agent-runtime/bin/node --version >/dev/null 2>&1 || exit 99; "
++                    "ln -sf /opt/agent-runtime/bin/node /usr/local/bin/node; "
++                    "ln -sf /opt/agent-runtime/bin/qwen /usr/local/bin/qwen; "
++                    "qwen --version"
++                ),
++                env={"DEBIAN_FRONTEND": "noninteractive"},
++            )
++            return
++        except NonZeroAgentExitCodeError:
++            pass
++
++        version_spec = f"@{self._version}" if self._version else "@latest"
++        # Phase 1: install system deps (curl + nodejs + npm) as root,
++        # but skip if npm is already present (avoids conflict with images
++        # that pre-install nodejs from NodeSource etc.)
+         await self.exec_as_root(
+             environment,
+-            command="apt-get update && apt-get install -y curl",
++            command=(
++                "if command -v npm &>/dev/null; then"
++                "  echo '[setup] npm already present, skipping system install';"
++                " elif ldd --version 2>&1 | grep -qi musl || [ -f /etc/alpine-release ]; then"
++                "  apk add --no-cache curl bash nodejs npm;"
++                " elif command -v apt-get &>/dev/null; then"
++                "  apt-get update && apt-get install -y curl nodejs npm;"
++                " elif command -v yum &>/dev/null; then"
++                "  yum install -y curl nodejs npm;"
++                " else"
++                '  echo "Warning: No known package manager found" >&2;'
++                " fi"
++            ),
+             env={"DEBIAN_FRONTEND": "noninteractive"},
+         )
+-        version_spec = f"@{self._version}" if self._version else "@latest"
++        # Phase 2: install qwen-code as agent user (npm is now available;
++        # nvm fallback kept in case the system npm is too old)
+         await self.exec_as_agent(
+             environment,
++            env={"NODE_OPTIONS": "--dns-result-order=ipv4first"},
+             command=(
+                 "set -euo pipefail; "
+-                "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash && "
+-                'export NVM_DIR="$HOME/.nvm" && '
+-                '\\. "$NVM_DIR/nvm.sh" || true && '
+-                "command -v nvm &>/dev/null || { echo 'Error: NVM failed to load' >&2; exit 1; } && "
+-                "nvm install 22 && npm -v && "
++                "if ! command -v npm &>/dev/null; then"
++                "  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash && "
++                '  export NVM_DIR="$HOME/.nvm" && '
++                '  \\. "$NVM_DIR/nvm.sh" || true && '
++                "  command -v nvm &>/dev/null || { echo 'Error: NVM failed to load' >&2; exit 1; } && "
++                "  nvm install 22 && npm -v; "
++                "fi && "
++                "npm config set registry https://registry.npmmirror.com && "
+                 f"npm install -g @qwen-code/qwen-code{version_spec} && "
+-                "qwen --version"
++                "qwen --version && "
++                # Patch cli.js: remove DashScope domain restriction so cache_control is sent for all URLs
++                "CLI_JS=$(npm root -g)/@qwen-code/qwen-code/cli.js; "
++                "echo \"[patch] CLI_JS=$CLI_JS\"; "
++                "if [ -f \"$CLI_JS\" ]; then "
++                "  sed -i 's/DashScopeOpenAICompatibleProvider\\.isDashScopeProvider(config2)/true/g' \"$CLI_JS\"; "
++                "  echo \"[patch] done, remaining=$(grep -c isDashScopeProvider \\\"$CLI_JS\\\" || true)\"; "
++                "else "
++                "  echo '[patch] cli.js not found'; "
++                "fi"
+             ),
+         )
+ 
+@@ -232,6 +282,14 @@ class QwenCode(BaseInstalledAgent):
+                 total_cached_tokens=total_cache or None,
+                 total_cost_usd=None,
+                 total_steps=len(steps),
++                extra=(
++                    {
++                        "total_cache_read_input_tokens": total_cache,
++                        "cache_read_input_tokens": total_cache,
++                    }
++                    if total_cache
++                    else None
++                ),
+             ),
+         )
+ 

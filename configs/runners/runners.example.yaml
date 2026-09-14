@@ -1,0 +1,48 @@
+api_runners:
+  anthropic_messages:
+    url: "http://localhost:8765/v1/messages"
+    method: POST
+    response_format: anthropic
+    api_key_env: AGENTMETER_API_KEY
+    auth_header: Authorization
+    auth_scheme: Bearer
+    payload:
+      task_id: "{task_id}"
+      model: "{model}"
+      cli: "{cli}"
+      task_dir: "{task_dir}"
+      run_dir: "{run_dir}"
+      timeout_sec: "{timeout_sec}"
+      mock_agent_write: true
+
+  openai_responses:
+    url: "http://localhost:8765/v1/responses"
+    method: POST
+    response_format: responses
+    api_key_env: AGENTMETER_API_KEY
+    auth_header: Authorization
+    auth_scheme: Bearer
+    payload:
+      task_id: "{task_id}"
+      model: "{model}"
+      cli: "{cli}"
+      task_dir: "{task_dir}"
+      run_dir: "{run_dir}"
+      timeout_sec: "{timeout_sec}"
+      mock_agent_write: true
+
+  openai_completions:
+    url: "http://localhost:8765/v1/chat/completions"
+    method: POST
+    response_format: completions
+    api_key_env: AGENTMETER_API_KEY
+    auth_header: Authorization
+    auth_scheme: Bearer
+    payload:
+      task_id: "{task_id}"
+      model: "{model}"
+      cli: "{cli}"
+      task_dir: "{task_dir}"
+      run_dir: "{run_dir}"
+      timeout_sec: "{timeout_sec}"
+      mock_agent_write: true

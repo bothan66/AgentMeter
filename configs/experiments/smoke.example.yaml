@@ -1,0 +1,16 @@
+name: smoke_example
+manifest: configs/manifests/smoke.example.csv
+models:
+  - model_a_mock
+  - model_b_mock
+clis:
+  - cli_a_mock
+  - cli_b_mock
+runner: api
+attempts: 1
+timeout_sec: 600
+record_trajectory: true
+save_stdout: true
+save_stderr: true
+save_patch: true
+resume: true

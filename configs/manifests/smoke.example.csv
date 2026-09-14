@@ -1,0 +1,3 @@
+task_id,suite,relative_task_path,difficulty,domain,tags,eval_type,eval_command,timeout_sec
+toy_bugfix_001,core30,skillsbench/toy_bugfix_001,easy,python,bugfix;smoke,checker,./checker.sh,60
+toy_shell_001,core30,terminal_bench/toy_shell_001,easy,shell,terminal;smoke,checker,./checker.sh,60

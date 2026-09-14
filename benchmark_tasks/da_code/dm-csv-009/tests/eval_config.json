@@ -1,0 +1,18 @@
+{
+  "func": "compare_csv",
+  "result_files": [
+    "author.csv"
+  ],
+  "options": {
+    "condition_cols": [
+      1,
+      2,
+      3
+    ]
+  },
+  "ml_config": {
+    "task": "data manipulation",
+    "type": "csv",
+    "hardness": "Hard"
+  }
+}

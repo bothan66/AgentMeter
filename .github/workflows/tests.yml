@@ -1,0 +1,22 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install -e '.[dev]'
+      - run: python scripts/public_release_check.py
+      - run: pytest -q
+      - run: python scripts/reproduce_artifact_table.py
+      - run: bash -n scripts/run_final16_condition.sh scripts/run_harbor_suite.sh

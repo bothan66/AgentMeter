@@ -1,0 +1,19 @@
+{
+  "func": "compare_csv",
+  "result_files": [
+    "undefeated.csv"
+  ],
+  "options": {
+    "condition_cols": [
+      0,
+      1
+    ],
+    "score_rule": "all",
+    "ignore_order": true
+  },
+  "ml_config": {
+    "task": "data manipulation",
+    "type": "csv",
+    "hardness": "Medium"
+  }
+}

@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "Please cite the accompanying AgentMeter manuscript."
+title: "Matching Matters: A Fair Quality–Efficiency Benchmark for Command-Line Agents"
+type: software
+version: 0.1.0
+authors:
+  - family-names: Chi
+    given-names: Han
+  - family-names: Qi
+    given-names: Jiaxin
+  - family-names: Cui
+    given-names: Yan
+  - family-names: Lai
+    given-names: Baisheng
+  - family-names: Huang
+    given-names: Jianqiang
+license: MIT

@@ -1,0 +1,11 @@
+api_runners:
+  default:
+    url: "mock://local"
+    method: POST
+    payload:
+      task_id: "{task_id}"
+      model: "{model}"
+      cli: "{cli}"
+      task_dir: "{task_dir}"
+      run_dir: "{run_dir}"
+      timeout_sec: "{timeout_sec}"
