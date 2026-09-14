@@ -41,7 +41,7 @@ Our contributions are:
 |:--|--:|:--|
 | [Full benchmark](configs/task_lists/full80.txt) | 80 tasks | Deployment-level LM–CLI evaluation |
 | [Core subset](configs/task_lists/core30.public.txt) | 30 tasks × 28 pairs | Complete 7-model × 4-CLI comparison |
-| AgentMeter-Opt | 16 tasks, 320 conditions | Original, Self, Cross, and Pooled description evaluation |
+| AgentMeter-Opt | 16 tasks, 320 main + 64 Generic executions | Original/Self/Cross; Pooled and Adapted-1 are derived controls |
 
 ## Main results
 
@@ -78,6 +78,11 @@ Core and Full rankings remain strongly aligned on their shared configurations
 
 ## AgentMeter-Opt
 
+The main matrix contains 64 Original, 64 Self and 192 Cross executions.
+Generic adds 64 public-only control executions. Pooled aggregates source
+outcomes, and Adapted-1 samples 10,000 offline source assignments.
+See the [paper protocol and release scope](docs/paper_alignment.md).
+
 AgentMeter-Opt diagnoses route friction from an Original trajectory, proposes a
 bounded rewrite of `instruction.md`, applies a task-preservation safety gate,
 and freezes the selected description before target evaluation. Tests,
@@ -113,15 +118,16 @@ Start by recomputing the bundled descriptive Self/Cross tables (no API needed):
 python scripts/reproduce_artifact_table.py
 ```
 
-Costs in these archived CSVs are **CNY**; cached input is already part of input
-tokens. The script does not recompute manuscript AMS.
+Archived CSVs retain CNY for provenance; the table command displays **USD**
+using the manuscript's frozen rate, **1 CNY = 0.1471 USD**. Cached input is
+already included in input tokens. This descriptive command does not compute AMS.
 
-| Self target (16 tasks each) | Original reward | Optimized reward | Original cost (CNY) | Optimized cost (CNY) |
+| Self target (16 tasks each) | Original reward | Optimized reward | Original cost (USD) | Optimized cost (USD) |
 |:--|--:|--:|--:|--:|
-| DeepSeek × Kimi | 0.5521 | 0.7083 | 21.8661 | 10.5967 |
-| GLM × Qwen | 0.5208 | 0.6458 | 22.9123 | 14.8575 |
-| Qwen × Codex | 0.2761 | 0.6745 | 4.3432 | 3.8774 |
-| Qwen × Kimi | 0.4323 | 0.5586 | 5.5785 | 4.6469 |
+| DeepSeek × Kimi | 0.5521 | 0.7083 | 3.2165 | 1.5588 |
+| GLM × Qwen | 0.5208 | 0.6458 | 3.3704 | 2.1855 |
+| Qwen × Codex | 0.2761 | 0.6745 | 0.6389 | 0.5704 |
+| Qwen × Kimi | 0.4323 | 0.5586 | 0.8206 | 0.6836 |
 
 Source: [archived Self summary](artifacts/agentmeter_opt_final16/results/self_summary.csv).
 Reward is the mean verifier reward; cost is the total over all 16 tasks,
@@ -130,8 +136,8 @@ including failures. Cross results are printed separately by the same script.
 ### 1. Install AgentMeter
 
 ```bash
-git clone <repository-url>
-cd agentmeter
+git clone https://github.com/bothan66/AgentMeter.git
+cd AgentMeter
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -e '.[opt]'
@@ -184,8 +190,10 @@ bash scripts/run_harbor_suite.sh configs/task_lists/full80.txt
 ```
 
 Repeat for each target configuration to generate new Harbor rewards and usage
-records. Manuscript AMS additionally requires the historical scoring and
-pricing settings; metric functions alone do not recover those settings.
+records. Compute the manuscript-defined score using
+`python scripts/compute_paper_ams.py --runs condition.csv`, with one row per
+task: `task_id,stratum,reward,cost_usd`. See [scoring protocol](docs/paper_alignment.md)
+for required effort labels, rounded calibration limits, and historical data gaps.
 
 ### 4. Run selected AgentMeter-Opt examples
 
@@ -228,7 +236,7 @@ verifier before reward-first, cost-second selection, then freeze the selected
 description before Self or Cross evaluation. Automated preservation gates are
 heuristics, not proof of semantic equivalence.
 
-The complete reproduction path is:
+The execution and scoring path is:
 
 ```text
 task + LM/CLI config → Harbor/Docker → CLI agent → provider API

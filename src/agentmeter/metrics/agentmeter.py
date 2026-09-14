@@ -1,4 +1,6 @@
-"""Pure Python AgentMeter metrics.
+"""Legacy token-budget diagnostics, NOT the final manuscript AMS.
+
+Use agentmeter.metrics.paper.paper_ams for manuscript scoring.
 
 The functions accept either a list of dictionaries or a pandas DataFrame. Pandas
 is never required at import time.
@@ -178,4 +180,3 @@ def population_std(values: list[float]) -> float:
         return 0.0
     mean = sum(values) / len(values)
     return sqrt(sum((value - mean) ** 2 for value in values) / len(values))
-

@@ -1,5 +1,11 @@
 # Reproduction scope
 
+Manuscript scoring is now implemented in `metrics/paper.py`, with the CLI
+`scripts/compute_paper_ams.py` and published rounded calibration parameters.
+See [paper alignment](paper_alignment.md) for precision limits and required
+task effort labels. Descriptive tables now display USD at 0.1471 USD/CNY;
+raw archived CSVs remain unchanged.
+
 Current example release: 16 description pairs are public; the complete
 64-description archive is not included. Local tests and eight mock pipeline
 attempts passed after this change. A live Docker/API run is still unverified:

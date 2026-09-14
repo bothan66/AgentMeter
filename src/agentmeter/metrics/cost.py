@@ -1,4 +1,4 @@
-"""Cost-oriented AgentMeter helpers."""
+"""Legacy cost diagnostics; use metrics.paper.paper_ams for manuscript AMS."""
 
 from __future__ import annotations
 
@@ -31,4 +31,3 @@ def expensive_failure_rate(rows: Any, tau_cny: float = 1.0, denom: int | None = 
 
 def cost_aware_score(rows: Any, budgets: Iterable[float] = DEFAULT_COST_BUDGETS, tau_cny: float = 1.0) -> float:
     return cost_aubqc(rows, budgets=budgets) * (1.0 - expensive_failure_rate(rows, tau_cny=tau_cny))
-
