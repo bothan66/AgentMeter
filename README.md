@@ -181,6 +181,10 @@ Required columns: `task_id,stratum,reward,cost_usd`.
 
 **3. Run a released example**
 
+The example below evaluates **regex-log with Qwen3.6-Plus × Codex CLI**, a
+source–target pair used in the paper's description study. It compares the
+original instruction with the released rewrite from that same pair (Self).
+
 Install Docker and the [pinned, patched Harbor](docs/external_dependencies.md),
 then configure the target using the section below.
 
@@ -192,7 +196,7 @@ cp .env.example .env
 # Export the values below; launchers do not automatically load .env.
 
 export AGENTMETER_HARBOR_BIN=harbor
-export AGENTMETER_MODEL=deepseek-v4-pro
+export AGENTMETER_MODEL='Qwen3.6+'
 export AGENTMETER_AGENT=codex
 export OPENAI_API_KEY=your-provider-key
 export OPENAI_BASE_URL=https://provider.example/v1
@@ -206,6 +210,9 @@ export AGENTMETER_AGENT_VERSION=0.153.0
 
 Sanitized OpenAI Responses, Chat Completions, Anthropic Messages, and
 CLIProxyAPI templates are provided in `configs/` and `integrations/`.
+`Qwen3.6+` is the model alias used in the example; replace it with your
+provider's identifier for Qwen3.6-Plus. Codex 0.153.0 pins the release runtime;
+it does not specify the CLI version of historical paper runs.
 
 </details>
 
@@ -217,8 +224,7 @@ bash scripts/run_final16_condition.sh qwen36_codex original regex-log
 bash scripts/run_final16_condition.sh qwen36_codex optimized regex-log
 ```
 
-For GLM-5.3-Flash, use the [proxy template](integrations/cliproxyapi/glm.example.yaml)
-and set `AGENTMETER_MODEL=glm5.3-flash`. The base URL must also be reachable
+The provider or proxy base URL must also be reachable
 from the task container; `127.0.0.1` inside a container refers to that container.
 
 `qwen36_codex` selects the **description source**; `AGENTMETER_MODEL` and
@@ -236,9 +242,9 @@ Within its task trial directory:
 | `agent/codex.txt` | Raw Codex execution log |
 | `verifier/test-stdout.txt` | Individual test outcomes |
 
-A real GLM-5.3-Flash × Codex 0.153.0 smoke run completed the API → tools →
-verifier → saved-results workflow. See [validation details](docs/reproduction_status.md#runtime-setup)
-for the tested task and outcome.
+See the [complete original and rewritten instructions](artifacts/agentmeter_opt_final16/descriptions/qwen36_codex/regex-log/)
+and [reproduction guide](docs/reproduction_status.md) for the released artifacts
+and runtime details.
 
 <details>
 <summary>Run Core30 or Full80</summary>
