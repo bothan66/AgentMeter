@@ -1,0 +1,20 @@
+diff --git a/src/harbor/agents/installed/codex.py b/src/harbor/agents/installed/codex.py
+--- a/src/harbor/agents/installed/codex.py
++++ b/src/harbor/agents/installed/codex.py
+@@ -665,6 +665,7 @@
+                 'name = "custom_relay"',
+                 f'base_url = "{base_url}"',
+                 f'wire_api = "{wire_api}"',
++                'env_key = "OPENAI_API_KEY"',
+                 "",
+             ]
+ 
+@@ -716,7 +717,7 @@
+         if not self.model_name:
+             raise ValueError("Model name is required")
+ 
+-        model = self.model_name.split("/")[-1]
++        model = self.model_name if self._get_env("OPENAI_BASE_URL") else self.model_name.split("/")[-1]
+ 
+         # Build command with optional CLI config flags from descriptors.
+         cli_flags = self.build_cli_flags()

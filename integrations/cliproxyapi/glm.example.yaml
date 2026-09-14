@@ -1,0 +1,13 @@
+# Replace credential placeholders in a private copy before starting CLIProxyAPI.
+host: "0.0.0.0"
+port: 8317
+api-keys:
+  - "YOUR_LOCAL_PROXY_KEY"
+openai-compatibility:
+  - name: glm-provider
+    base-url: "https://YOUR_PROVIDER/v1"
+    api-key-entries:
+      - api-key: "YOUR_UPSTREAM_API_KEY"
+    models:
+      - name: "ZHIPU/GLM-5.3-Flash"
+        alias: "glm5.3-flash"

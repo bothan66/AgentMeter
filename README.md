@@ -42,9 +42,9 @@ evaluation.
 | **80 tasks** in Full80 | **7 models × 4 CLIs** on Core30 | **16 tasks × 4 source pairs** |
 | [Frozen task selection](configs/task_lists/full80.txt) | [30-task core subset](configs/task_lists/core30.public.txt) | [16 selected rewrite examples](artifacts/agentmeter_opt_final16/README.md) |
 
-The method targets task-preserving rewrites. Automated screening is not a
-proof of semantic equivalence; the example catalog documents intervention
-boundaries.
+The method constructs source-conditioned descriptions while retaining the
+task environments and verifiers. See the [example catalog](artifacts/agentmeter_opt_final16/README.md)
+for instruction pairs and [technical notes](docs/description_notes.md) for their interpretation.
 
 ## Results
 
@@ -178,6 +178,15 @@ Required columns: `task_id,stratum,reward,cost_usd`.
 
 Install Docker and the [pinned, patched Harbor](docs/external_dependencies.md),
 then configure the target using the section below.
+
+Check your Responses endpoint before starting a task:
+
+```bash
+python scripts/probe_responses.py
+```
+
+The probe uses the same exported provider credentials and model setting.
+[GLM routing example](integrations/cliproxyapi/glm.example.yaml)
 
 <details>
 <summary>Configure provider credentials and the target model–CLI pair</summary>

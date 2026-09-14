@@ -19,6 +19,8 @@ git clone https://github.com/laude-institute/harbor.git vendor/harbor
 git -C vendor/harbor checkout 07fa4c80c0e729a4ec0cc3184e93a6d730024f81
 git -C vendor/harbor apply --check ../../integrations/harbor/compatibility.patch
 git -C vendor/harbor apply ../../integrations/harbor/compatibility.patch
+git -C vendor/harbor apply --check ../../integrations/harbor/provider-auth.patch
+git -C vendor/harbor apply ../../integrations/harbor/provider-auth.patch
 python -m pip install -e vendor/harbor
 export AGENTMETER_HARBOR_BIN=harbor
 ```
@@ -37,6 +39,22 @@ CLI inside each task container. Set `AGENTMETER_AGENT_VERSION` to pin its
 version; leaving it unset uses Harbor's default and is not version-frozen.
 
 ## Provider routing
+
+The provider-auth patch explicitly configures `env_key = "OPENAI_API_KEY"`
+for the custom Codex provider. Without this setting, a reachable endpoint
+can reject requests because no bearer credential was sent. See the
+[official configuration reference](https://developers.openai.com/codex/config-reference/).
+
+The same patch preserves full provider model IDs for custom endpoints.
+For GLM through a Chat Completions upstream, a minimal CLIProxyAPI route is
+provided in `integrations/cliproxyapi/glm.example.yaml`. The client model is
+`glm5.3-flash`; the upstream ID is `ZHIPU/GLM-5.3-Flash`.
+
+Set `OPENAI_BASE_URL` to the proxy's `/v1` address and `OPENAI_API_KEY` to
+the proxy's client key, then run `python scripts/probe_responses.py` before
+launching a task. From a task container, use a host address reachable from
+that container rather than `127.0.0.1`. Host-only probes and container
+execution may therefore need different base URLs.
 
 Supply credentials via environment variables. Copying `.env.example` does
 not load it automatically: export the values in your shell.
