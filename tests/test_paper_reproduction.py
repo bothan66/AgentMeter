@@ -3,7 +3,7 @@ from copy import deepcopy
 
 import pytest
 
-from reproduce_paper_tables import ROOT, compute_tables, load_inputs, validate_grid
+from reproduce_paper_tables import ROOT, compute_tables, example_table, load_inputs, validate_grid
 
 
 def short_pair(target):
@@ -38,6 +38,13 @@ def test_final16_matches_manuscript():
     for target, values in expected.items():
         assert tuple(round(final[target][c]['AMS'], 3) for c in ['Original', 'Pooled', 'Cross']) == values
         assert [final[target][c]['n'] for c in ['Original', 'Self', 'Cross', 'Pooled']] == [16, 16, 48, 64]
+
+
+def test_all_example_results_match_catalog():
+    rows, _ = load_inputs()
+    table = example_table(rows)
+    assert len(table.splitlines()) == 18  # header + separator + all 16 pairs
+    assert table in (ROOT / 'artifacts/agentmeter_opt_final16/README.md').read_text()
 
 
 def test_reject_incomplete_duplicate_or_inconsistent_grid():

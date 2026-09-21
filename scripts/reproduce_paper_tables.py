@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Recompute Core30 and Final16 AMS from compact archived run records."""
+import argparse
 import csv
 import json
 import sys
@@ -74,7 +75,30 @@ def compute_tables(rows, calibration):
     return core, final
 
 
+def example_table(rows):
+    """Pair every released example with its archived Original and Self result."""
+    index = {(r['target'], r['task_id'], r['condition']): r for r in rows
+             if r['dataset'] == 'final16' and r['condition'] in {'Original', 'Self'}}
+    lines = ['| Source pair / task | Reward: Original → Self | USD: Original → Self | Cost change |',
+             '|:--|--:|--:|--:|']
+    for path in sorted((ROOT / 'artifacts/agentmeter_opt_final16/descriptions').glob('*/*/optimized_instruction.md')):
+        source, task = path.parent.parent.name, path.parent.name
+        before, after = (index[(source, task, c)] for c in ['Original', 'Self'])
+        b, a = float(before['cost_usd']), float(after['cost_usd'])
+        change = f'{100 * (a / b - 1):+.1f}%' if b else 'N/A'
+        link = f'descriptions/{source}/{task}/'
+        lines.append(f"| [{source} / {task}]({link}) | {float(before['reward']):.3f} → {float(after['reward']):.3f} | {b:.5f} → {a:.5f} | {change} |")
+    return '\n'.join(lines)
+
+
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--examples', action='store_true', help='Print all 16 released Original/Self example pairs')
+    args = parser.parse_args()
+    if args.examples:
+        rows, _ = load_inputs()
+        print(example_table(rows))
+        return
     core, final = compute_tables(*load_inputs())
     print('| Core30 target | Passes | Tokens/pass (M) | USD/pass | AMS |')
     print('|:--|--:|--:|--:|--:|')

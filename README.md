@@ -204,9 +204,9 @@ records track the resulting reward and execution cost.
 | Original | 1.0 | 0.02238 | 67,380 |
 | Self rewrite | 1.0 | 0.01726 | 59,868 |
 
-These are historical Qwen × Codex observations, not a new smoke test or an
-estimate across repeated trials. The corresponding rows are included in the
-[run-level records](artifacts/scoring/run_metrics.csv).
+Historical paired observations, using archived USD costs. See
+[all 16 example results](artifacts/agentmeter_opt_final16/README.md#paired-results)
+and [the public basis for representative edits](docs/description_notes.md#public-requirements-and-their-adaptations).
 
 [Compare the complete pair](artifacts/agentmeter_opt_final16/descriptions/qwen36_codex/regex-log/) ·
 [Browse 16 selected examples](artifacts/agentmeter_opt_final16/README.md)
