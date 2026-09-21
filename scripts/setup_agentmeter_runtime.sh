@@ -8,7 +8,7 @@ harbor_already_patched=0
 
 usage() {
   cat <<'EOF'
-Usage: bash scripts/bootstrap_execution.sh [OPTIONS]
+Usage: bash scripts/setup_agentmeter_runtime.sh [OPTIONS]
 
 Prepare AgentMeter's pinned execution dependencies.
 
@@ -37,7 +37,7 @@ command -v git >/dev/null || { echo "git is required" >&2; exit 3; }
 command -v python >/dev/null || { echo "python is required" >&2; exit 3; }
 command -v sha256sum >/dev/null || { echo "sha256sum is required" >&2; exit 3; }
 
-mapfile -t lock_values < <(python - "${repo_root}/integrations/execution-lock.json" <<'PY'
+mapfile -t lock_values < <(python - "${repo_root}/integrations/agentmeter_runtime.lock.json" <<'PY'
 import json, sys
 data = json.load(open(sys.argv[1], encoding="utf-8"))
 for section, key in (("harbor", "repository"), ("harbor", "commit")):
@@ -111,8 +111,8 @@ checkout_pinned "${harbor_repository}" "${harbor_commit}" "${harbor_dir}"
 if ((harbor_already_patched)); then
   echo "AgentMeter Harbor patches already applied"
 else
-  apply_patch_once "${harbor_dir}" "${repo_root}/integrations/harbor/compatibility.patch"
-  apply_patch_once "${harbor_dir}" "${repo_root}/integrations/harbor/provider-auth.patch"
+  apply_patch_once "${harbor_dir}" "${repo_root}/integrations/harbor/agentmeter_cli_adapters.patch"
+  apply_patch_once "${harbor_dir}" "${repo_root}/integrations/harbor/agentmeter_provider_routing.patch"
   harbor_diff_hash=$(git -C "${harbor_dir}" diff --binary HEAD | sha256sum | awk '{print $1}')
   printf '%s\n%s\n' "${harbor_commit}" "${harbor_diff_hash}" > "${harbor_dir}/.git/agentmeter-patched-commit"
 fi

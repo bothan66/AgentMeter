@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_unreleased_description_fails_before_execution():
     result = subprocess.run(
-        ['bash', str(ROOT / 'scripts/run_final16_condition.sh'),
+        ['bash', str(ROOT / 'scripts/run_agentmeter_comparison.sh'),
          'qwen36_codex', 'optimized', 'xlsx-recover-data'],
         capture_output=True, text=True,
     )
@@ -21,7 +21,7 @@ def test_final16_preserves_snapshot_and_refuses_overwrite(tmp_path):
     env = dict(os.environ, AGENTMETER_MODEL='provider/model',
                AGENTMETER_AGENT='codex', AGENTMETER_HARBOR_BIN='/bin/true',
                AGENTMETER_JOBS_DIR=str(jobs), AGENTMETER_AGENT_VERSION='0.153.0')
-    cmd = ['bash', str(ROOT / 'scripts/run_final16_condition.sh'),
+    cmd = ['bash', str(ROOT / 'scripts/run_agentmeter_comparison.sh'),
            'qwen36_codex', 'optimized', 'regex-log']
     subprocess.run(cmd, env=env, check=True, capture_output=True)
     snapshot = jobs / 'task_snapshots/regex-log/instruction.md'
@@ -38,7 +38,7 @@ def test_default_conditions_use_same_released_tasks(tmp_path):
         jobs = tmp_path / variant
         env = dict(os.environ, AGENTMETER_MODEL='test', AGENTMETER_AGENT='codex',
                    AGENTMETER_HARBOR_BIN='/bin/true', AGENTMETER_JOBS_DIR=str(jobs))
-        subprocess.run(['bash', str(ROOT / 'scripts/run_final16_condition.sh'),
+        subprocess.run(['bash', str(ROOT / 'scripts/run_agentmeter_comparison.sh'),
                         'qwen36_codex', variant], env=env, check=True, capture_output=True)
         selected.append({p.name for p in (jobs / 'task_snapshots').iterdir()})
     expected = {p.name for p in (ROOT / 'artifacts/agentmeter_opt_final16/descriptions/qwen36_codex').iterdir() if p.is_dir()}
@@ -50,7 +50,7 @@ def test_invalid_batch_creates_no_partial_run(tmp_path):
         jobs = tmp_path / tail
         env = dict(os.environ, AGENTMETER_MODEL='test', AGENTMETER_AGENT='codex',
                    AGENTMETER_HARBOR_BIN='/bin/true', AGENTMETER_JOBS_DIR=str(jobs))
-        result = subprocess.run(['bash', str(ROOT / 'scripts/run_final16_condition.sh'),
+        result = subprocess.run(['bash', str(ROOT / 'scripts/run_agentmeter_comparison.sh'),
                                  'qwen36_codex', 'original', 'regex-log', tail],
                                 env=env, capture_output=True)
         assert result.returncode == 3
@@ -63,7 +63,7 @@ def test_suite_preflight_and_final_line_without_newline(tmp_path):
     env = dict(os.environ, AGENTMETER_MODEL='test', AGENTMETER_AGENT='codex',
                AGENTMETER_HARBOR_BIN='/bin/true', AGENTMETER_JOBS_DIR=str(jobs),
                AGENTMETER_TASK_ROOT=str(ROOT / 'benchmark_tasks'))
-    command = ['bash', str(ROOT / 'scripts/run_harbor_suite.sh'), str(task_list)]
+    command = ['bash', str(ROOT / 'scripts/run_agentmeter_suite.sh'), str(task_list)]
     for content in ['regex-log\nmissing-task', 'regex-log\nregex-log', '']:
         task_list.write_text(content)
         result = subprocess.run(command, env=env, capture_output=True)

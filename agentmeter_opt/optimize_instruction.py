@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from harness_lib import Experiment, TaskSpec, api_lookup, load_api_configs, read_json, run_attempt, write_json  # type: ignore
+from agentmeter_harness import Experiment, TaskSpec, api_lookup, load_api_configs, read_json, run_attempt, write_json  # type: ignore
 from agentmeter_opt.safety_gate import combo_adapted_instruction_safety_gate, instruction_safety_gate
 
 

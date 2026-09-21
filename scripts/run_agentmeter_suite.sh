@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-task_list=${1:?Usage: run_harbor_suite.sh TASK_LIST}
+task_list=${1:?Usage: run_agentmeter_suite.sh TASK_LIST}
 task_root=${AGENTMETER_TASK_ROOT:?Set AGENTMETER_TASK_ROOT to the benchmark task checkout}
 harbor_bin=${AGENTMETER_HARBOR_BIN:-harbor}
 model=${AGENTMETER_MODEL:?Set AGENTMETER_MODEL}

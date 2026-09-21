@@ -9,10 +9,11 @@ SkillsBench owns task definitions: `instruction.md`, `task.toml`, Docker
 environment, skills, tests, verifier, solution, and public input data. Harbor
 owns task execution. AgentMeter receives only task paths and run artifacts.
 
-The adapters in `integrations/skillsbench` discover valid task layouts and
-build manifests. The launchers in `scripts/` execute paired examples or
-frozen task lists through Harbor. `integrations/harbor` contains compatibility
-patches and task/evaluation helpers.
+The AgentMeter adapters in `integrations/skillsbench` discover valid task
+layouts and build manifests. `run_agentmeter_comparison.sh` and
+`run_agentmeter_suite.sh` execute paired examples or frozen task lists through
+Harbor. `integrations/harbor` contains AgentMeter's CLI-adapter and provider-
+routing patches plus task/evaluation helpers.
 
 ## AgentMeter and AgentMeter-Opt
 
@@ -40,6 +41,6 @@ included in `integrations/cliproxyapi/`, under its upstream MIT license.
 `src/agentmeter/metrics/paper.py` implements manuscript AMS.
 `agentmeter_opt/` implements trajectory-guided candidate construction and
 preservation checks; its shared execution helpers live in
-`scripts/harness_lib.py`. Archived results and task descriptions live in
+`scripts/agentmeter_harness.py`. Archived results and task descriptions live in
 `artifacts/`. Simulation data is isolated in `tests/fixtures/`; production
 runner discovery reads local configuration files only.

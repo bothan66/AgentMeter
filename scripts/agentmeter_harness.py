@@ -1,3 +1,5 @@
+"""AgentMeter's shared task-execution and trajectory-recording harness."""
+
 from __future__ import annotations
 
 import csv

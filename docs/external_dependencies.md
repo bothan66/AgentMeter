@@ -12,14 +12,14 @@ AgentMeter's scoring package and Opt dependencies without this Harbor version.
 The locally used Harbor base revision is
 `07fa4c80c0e729a4ec0cc3184e93a6d730024f81`.
 The four modified CLI adapters are preserved in
-[`compatibility.patch`](../integrations/harbor/compatibility.patch), relative
+[`agentmeter_cli_adapters.patch`](../integrations/harbor/agentmeter_cli_adapters.patch), relative
 to that revision. This is an execution compatibility snapshot, not a claim
 that all historical paper runs used this exact runtime.
 
 From an activated Python 3.12–3.13 environment at the AgentMeter repository root:
 
 ```bash
-bash scripts/bootstrap_execution.sh
+bash scripts/setup_agentmeter_runtime.sh
 export AGENTMETER_HARBOR_BIN=harbor
 ```
 
@@ -27,7 +27,7 @@ The bootstrap prepares Harbor only. The 16 released task bundles are already
 included. For larger Core30/Full80 selections, keep a separate compatible task
 checkout outside this repository and set `AGENTMETER_TASK_ROOT` to it. Exact
 dependency and task-source pins are machine-readable in
-[`integrations/execution-lock.json`](../integrations/execution-lock.json).
+[`integrations/agentmeter_runtime.lock.json`](../integrations/agentmeter_runtime.lock.json).
 
 The patch includes provider configuration for Codex, cache usage fields, and
 CLI installation support. It retains historical npm mirror settings and the

@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from harness_lib import ApiConfig, Experiment, normalize_api_response, run_experiment
+from agentmeter_harness import ApiConfig, Experiment, normalize_api_response, run_experiment
 
 
 ROOT = Path(__file__).resolve().parents[1]

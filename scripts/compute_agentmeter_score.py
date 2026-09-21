@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Score a one-condition task CSV using the manuscript AMS definition."""
+"""Compute the AgentMeter Score (AMS) from a one-condition task CSV."""
 import argparse
 import csv
 import json

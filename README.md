@@ -146,7 +146,7 @@ transfer summaries. No API or Docker is needed for this step.
 First install the pinned Harbor runtime and AgentMeter patches:
 
 ```bash
-bash scripts/bootstrap_execution.sh
+bash scripts/setup_agentmeter_runtime.sh
 ```
 
 The 16 executable paper examples are already included under `benchmark_tasks/`;
@@ -164,8 +164,8 @@ export CODEX_FORCE_API_KEY=1
 export CODEX_WIRE_API=responses
 
 python scripts/probe_responses.py
-bash scripts/run_final16_condition.sh qwen36_codex original regex-log
-bash scripts/run_final16_condition.sh qwen36_codex optimized regex-log
+bash scripts/run_agentmeter_comparison.sh qwen36_codex original regex-log
+bash scripts/run_agentmeter_comparison.sh qwen36_codex optimized regex-log
 ```
 
 Use your provider's identifier for Qwen3.6-Plus and a Responses endpoint
@@ -237,7 +237,7 @@ for attribution and applicable terms.
 | Selected rewrites and Self/Cross results | [Released artifacts](artifacts/agentmeter_opt_final16/) |
 | Complete Core30 paper table | [28-pair CSV](artifacts/core30_paper_results.csv) |
 | Main-table scoring inputs | [1,160 run records and provenance](artifacts/scoring/) |
-| Harbor patches and provider routing | [Execution dependencies](docs/external_dependencies.md) |
+| AgentMeter Harbor adapters and provider routing | [Execution dependencies](docs/external_dependencies.md) |
 | Modified CLIProxyAPI source and route setup | [Proxy integration](integrations/cliproxyapi/) |
 
 Runtime caches, credentials, and new trajectories are excluded from Git.

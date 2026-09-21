@@ -4,9 +4,9 @@
 |:--|:--|:--|
 | Recompute main-table AMS | `scripts/reproduce_paper_tables.py` | Included 1,160 run records, frozen strata and full-precision calibration |
 | Inspect archived results | `scripts/reproduce_artifact_table.py` | Included Self/Cross CSVs |
-| Score task-level results | `scripts/compute_paper_ams.py` | One-condition CSV with task ID, effort stratum, reward and USD cost |
-| Replay an example | `scripts/run_final16_condition.sh` | Selected source, target configuration and provider credentials |
-| Run Core30 / Full80 | `scripts/run_harbor_suite.sh` | Frozen task list and matching task checkout |
+| Score task-level results | `scripts/compute_agentmeter_score.py` | One-condition CSV with task ID, effort stratum, reward and USD cost |
+| Replay an example | `scripts/run_agentmeter_comparison.sh` | Selected source, target configuration and provider credentials |
+| Run Core30 / Full80 | `scripts/run_agentmeter_suite.sh` | Frozen task list and matching task checkout |
 | Generate a rewrite | `agentmeter_opt/optimize_instruction.py` | Original task, source trajectory and reflection API |
 
 The release includes 16 executable task bundles and 16 selected rewritten
@@ -59,7 +59,7 @@ expects `6,219,500`, whereas the generated report and agent's CSV-sum check
 give `6,419,800`. The bundled verifier remains unchanged. This run validates
 execution and result recording; it is not an additional paper result.
 
-`provider-auth.patch` configures the credential environment variable and
+`agentmeter_provider_routing.patch` configures the credential environment variable and
 preserves full custom-provider model IDs. The validated GLM route uses
 CLIProxyAPI for Responses-to-upstream conversion; the direct upstream route
 rejected the tested Responses inputs.
@@ -81,14 +81,14 @@ and execute one target pair over either frozen task list:
 ```bash
 export AGENTMETER_TASK_ROOT=/path/to/skillsbench
 
-bash scripts/run_harbor_suite.sh configs/task_lists/core30.public.txt
+bash scripts/run_agentmeter_suite.sh configs/task_lists/core30.public.txt
 # or
-bash scripts/run_harbor_suite.sh configs/task_lists/full80.txt
+bash scripts/run_agentmeter_suite.sh configs/task_lists/full80.txt
 ```
 
 Repeat for each target configuration to generate new Harbor rewards and usage
 records. Compute the manuscript-defined score using
-`python scripts/compute_paper_ams.py --runs condition.csv`, with one row per
+`python scripts/compute_agentmeter_score.py --runs condition.csv`, with one row per
 task: `task_id,stratum,reward,cost_usd`. See [scoring protocol](paper_alignment.md)
 for frozen effort labels, full-precision calibration, and condition definitions.
 

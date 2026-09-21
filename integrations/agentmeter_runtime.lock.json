@@ -3,8 +3,8 @@
     "repository": "https://github.com/laude-institute/harbor.git",
     "commit": "07fa4c80c0e729a4ec0cc3184e93a6d730024f81",
     "patches": [
-      "integrations/harbor/compatibility.patch",
-      "integrations/harbor/provider-auth.patch"
+      "integrations/harbor/agentmeter_cli_adapters.patch",
+      "integrations/harbor/agentmeter_provider_routing.patch"
     ]
   },
   "skillsbench": {

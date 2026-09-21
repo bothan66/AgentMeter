@@ -84,8 +84,8 @@ that environment-file review.
 From the repository root, after configuring Harbor and provider credentials:
 
 ```bash
-bash scripts/run_final16_condition.sh qwen36_codex original regex-log
-bash scripts/run_final16_condition.sh qwen36_codex optimized regex-log
+bash scripts/run_agentmeter_comparison.sh qwen36_codex original regex-log
+bash scripts/run_agentmeter_comparison.sh qwen36_codex optimized regex-log
 ```
 
 The source argument selects the description; environment variables select

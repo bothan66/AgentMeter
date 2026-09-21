@@ -11,7 +11,7 @@ export AGENTMETER_TASK_ROOT=/path/to/external/skillsbench/tasks
 ```
 
 The upstream URL and paper-time commit are recorded in
-`integrations/execution-lock.json`; AgentMeter does not download that task tree.
+`integrations/agentmeter_runtime.lock.json`; AgentMeter does not download that task tree.
 All released Final16 examples use the bundled task directories.
 
 Expected task layout:

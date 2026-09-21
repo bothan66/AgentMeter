@@ -82,7 +82,7 @@ export AGENTMETER_AGENT=codex
 export AGENTMETER_AGENT_VERSION=0.153.0
 export CODEX_FORCE_API_KEY=1
 export CODEX_WIRE_API=responses
-bash scripts/run_final16_condition.sh qwen36_codex original regex-log
+bash scripts/run_agentmeter_comparison.sh qwen36_codex original regex-log
 ```
 
 The proxy exposes `/v1/responses`, `/v1/chat/completions`, and

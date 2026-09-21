@@ -2,8 +2,8 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-source_pair=${1:?Usage: run_final16_condition.sh SOURCE_PAIR original|optimized [TASK ...]}
-variant=${2:?Usage: run_final16_condition.sh SOURCE_PAIR original|optimized [TASK ...]}
+source_pair=${1:?Usage: run_agentmeter_comparison.sh SOURCE_PAIR original|optimized [TASK ...]}
+variant=${2:?Usage: run_agentmeter_comparison.sh SOURCE_PAIR original|optimized [TASK ...]}
 shift 2
 
 case "${source_pair}" in

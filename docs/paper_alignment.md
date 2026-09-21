@@ -18,7 +18,7 @@ Budget inclusion uses <=; expensive failures use >. Strata receive equal
 weight, irrespective of their task counts.
 
 ```bash
-python scripts/compute_paper_ams.py --runs condition.csv
+python scripts/compute_agentmeter_score.py --runs condition.csv
 ```
 
 Supply task_id,stratum,reward,cost_usd for one configuration/condition, with
