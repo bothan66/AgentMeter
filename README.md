@@ -82,9 +82,9 @@ Cross uses rewrites from other source pairs. Pooled weights all sources
 equally, so every target is evaluated against the same description set.
 It does not select each target's best source.
 
-The table reports manuscript AMS. Archived reward/cost statistics can be
-regenerated using the command below; historical AMS reconstruction has
-additional inputs documented in the [scoring protocol](docs/paper_alignment.md).
+The table reports manuscript AMS. Recompute the released reward/cost
+statistics with the command below; see the [scoring protocol](docs/paper_alignment.md)
+for AMS inputs, calibration and historical result provenance.
 
 ## Method
 
@@ -165,6 +165,8 @@ and data-disk storage are covered in [execution setup](docs/external_dependencie
 `qwen36_codex` selects the description source; the exported model and
 agent select the target. Keeping them matched gives Self. Each invocation
 creates a separate directory under `jobs/`.
+Omitting task IDs runs the same released source-specific subset in both
+conditions, so Original and Self remain paired.
 
 | Trial output | What to inspect |
 |:--|:--|
@@ -191,8 +193,8 @@ creates a separate directory under `jobs/`.
 
 The rewrite makes the output-file contract explicit, consistent with the
 original public Python example that reads the file as a pattern.
-It illustrates description clarification; the excerpt alone does not
-establish a causal cost effect.
+This illustrates output-contract clarification. The paired evaluation
+records track the resulting reward and execution cost.
 
 [Compare the complete pair](artifacts/agentmeter_opt_final16/descriptions/qwen36_codex/regex-log/) ·
 [Browse 16 selected examples](artifacts/agentmeter_opt_final16/README.md)

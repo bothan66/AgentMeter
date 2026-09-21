@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "agentmeter"
 version = "0.1.0"
-description = "Task-description optimization across language models and agent harnesses."
+description = "Quality-efficiency benchmarking and trajectory-guided description optimization for model-harness pairs."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}

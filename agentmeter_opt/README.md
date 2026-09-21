@@ -29,6 +29,6 @@ Output artifacts:
 - `rejected_candidates.jsonl`: rejected candidates and violation reasons.
 - `gepa_task_result.json`: provenance and optimization summary.
 
-A candidate is not a result until the same model–harness combination reruns the
-unchanged task environment and verifier. Reward is primary; cost and trajectory
-efficiency are secondary.
+Evaluate candidates on the source model–harness pair with the unchanged task
+environment and verifier. Select by reward first and billable cost second,
+then freeze the selected description for Self/Cross evaluation.

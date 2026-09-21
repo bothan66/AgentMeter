@@ -112,8 +112,8 @@ run. Run these commands from the repository root.
 
 This command generates a candidate only. Evaluate it with the unchanged task
 verifier before reward-first, cost-second selection, then freeze the selected
-description before Self or Cross evaluation. Automated preservation gates are
-heuristics, not proof of semantic equivalence.
+description before Self or Cross evaluation. Review the automatic gate's
+decisions against the original requirements when selecting candidates.
 
 ## Validation
 

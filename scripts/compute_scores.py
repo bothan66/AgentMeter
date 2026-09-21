@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Summarize development-run diagnostics. For manuscript AMS use compute_paper_ams.py."""
 from __future__ import annotations
 
 import argparse
@@ -8,7 +9,7 @@ from harness_lib import read_csv, summarize_scores, write_csv, write_json
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--summary", required=True)
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
