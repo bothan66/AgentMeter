@@ -24,6 +24,38 @@ Each directory contains the Original and evaluated rewritten instruction.
 See [description notes](../../docs/description_notes.md) for task-specific
 interpretation and the public artifacts referenced by the examples.
 
+## Provenance and reuse
+
+These pairs document AgentMeter-Opt's changes to benchmark task descriptions:
+
+- `baseline_instruction.md` is the collected Original, byte-identical to the
+  corresponding bundled task's `instruction.md`; it is not AgentMeter-authored.
+- `optimized_instruction.md` is the historical AgentMeter-Opt modification of
+  that description. Its parent directories identify the source model–harness
+  pair and task ID. The source pair is not necessarily the evaluation target.
+- Environments, input artifacts, and verifiers are not rewritten by this
+  description intervention. The released historical text is not edited for
+  presentation; interpretation notes are kept separately.
+
+| Local task collection | Examples in this catalog | Source attribution |
+|:--|:--|:--|
+| `skillsbench` | citation-check, econ-detrending-correlation, sales-pivot-analysis, virtualhome-agent-planning, pddl-tpp-planning, xlsx-recover-data | [SkillsBench](https://github.com/benchflow-ai/skillsbench) |
+| `terminal_bench` | regex-log, async-task-scheduler, lru-cache-with-ttl, markdown-table-generator, bash-script-debugger | Local Terminal-Bench-compatible collection; compatibility is not a claim of an official upstream snapshot |
+| `da_code` | dm-csv-009, dm-csv-011 | Local [DA-Code](https://github.com/yiyihum/da-code)-compatible collection |
+
+Original content and retained material in rewrites remain subject to their
+applicable upstream terms, not automatically the repository's MIT license.
+Source attribution does not replace license compliance. Exact historical
+upstream revisions and any task-specific exceptions still need confirmation
+before public redistribution of the affected files.
+
+A separately licensed skill bundled inside a task environment is distinct
+from that task's instruction pair: its restrictions are not evidence that
+every rewritten description is restricted. See the
+[third-party notices](../../THIRD_PARTY_NOTICES.md) for the known XLSX skill
+exception. The catalog preserves the description examples independently of
+that environment-file review.
+
 ## Run an example
 
 From the repository root, after configuring Harbor and provider credentials:

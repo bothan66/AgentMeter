@@ -201,6 +201,12 @@ records track the resulting reward and execution cost.
 
 The examples span 13 tasks and all four source configurations. They are a
 selected subset of the 64 descriptions constructed in the study.
+Each pair retains the benchmark's Original instruction and the historical
+AgentMeter-Opt rewrite, identified by task and source model–harness pair.
+The rewrite is our description adaptation, not an upstream benchmark release;
+the original task environment and verifier are shared across conditions.
+See [example provenance and reuse](artifacts/agentmeter_opt_final16/README.md#provenance-and-reuse)
+for attribution and applicable terms.
 
 ## Repository guide
 
