@@ -1,0 +1,56 @@
+# Main-table reproduction data
+
+Run from the repository root:
+
+```bash
+python scripts/reproduce_paper_tables.py
+```
+
+This recomputes the 28-row Core30 results and the Final16 description-condition
+AMS table. Regression tests compare every Core30 pass count, tokens/pass,
+USD/pass and AMS to the released paper table, and Original/Pooled/Cross AMS
+for all four Final16 targets to manuscript display precision.
+
+## Contents
+
+| Material | Scope |
+|:--|:--|
+| `run_metrics.csv` | 840 Core30 rows + 64 Final16 Original + 64 Self + 192 Cross = 1,160 observations |
+| `provenance.json` | Original archive filenames and SHA256 checksums, plus extraction policy |
+| [`paper_calibration_full_precision.json`](../../configs/paper_calibration_full_precision.json) | Frozen USD budget grids and expensive-failure thresholds |
+
+Numeric strings are retained from the frozen archive. Private machine paths,
+exception text, credentials, trajectories, and task documents are not included
+in this data table. No new model executions were performed to create it.
+
+## Accounting and aggregation
+
+- `stratum` is the historical observed-effort assignment, not task metadata
+  difficulty. Core30 has a balanced 10/10/10 assignment; Final16 uses its
+  tasks' Full80 assignments. The same task may therefore have different
+  strata across these two experiments.
+- `cost_usd` is the archived per-run USD cost. Do not reconvert it using the
+  rounded CNY rate in the separate descriptive-summary script. It includes
+  the original provider-specific cache accounting.
+- `input_tokens` retains the archive's raw prompt counter. Some Claude
+  bridges report fresh input separately from cache reads/writes; others
+  include cache tokens in prompt input. `billable_component_tokens` is the
+  archived non-double-counted input/cache/output total used for tokens/pass.
+  The three cache counters are preserved for inspection, not blindly added
+  to prompt input. Token totals alone are not monetary cost.
+- `steps` and `tool_calls` retain historical extraction counters. Harnesses
+  can record different granularities; these are not standardized events.
+- All archived valid-run rows are retained, including zero rewards and
+  exceptions. `has_exception` records presence, not a new validity filter.
+  Core30 contains 66 such exception-marked observations.
+- Cross baseline copies are omitted: the 64 Original observations are
+  counted once. Self/Cross identify the rewrite source and evaluation target.
+- Pooled uses all four sources per task; Cross-only uses the three other
+  sources. These are balanced observation mixtures, not additional runs and
+  not averages of source-level AMS. Threshold each observation before
+  aggregating TQ, AUBQC and EFR within the frozen strata.
+
+The released 16 description examples remain a showcase subset. Scoring the
+complete archived grid does not require releasing all descriptions or traces;
+regenerating every execution does. This package does not reconstruct Generic,
+Adapted-1, or the complete Full80 experiment table.

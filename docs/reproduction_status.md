@@ -2,6 +2,7 @@
 
 | Workflow | Entry point | Inputs |
 |:--|:--|:--|
+| Recompute main-table AMS | `scripts/reproduce_paper_tables.py` | Included 1,160 run records, frozen strata and full-precision calibration |
 | Inspect archived results | `scripts/reproduce_artifact_table.py` | Included Self/Cross CSVs |
 | Score task-level results | `scripts/compute_paper_ams.py` | One-condition CSV with task ID, effort stratum, reward and USD cost |
 | Replay an example | `scripts/run_final16_condition.sh` | Selected source, target configuration and provider credentials |
@@ -19,10 +20,12 @@ Public tables display USD using the paper's fixed conversion,
 `metrics/paper.py` for AMS; the historical `AgentMeterScore` CSV field and
 legacy diagnostic functions are not the final manuscript metric.
 
-The included calibration file records published rounded values. Historical
-table reconstruction additionally requires original effort labels,
-full-precision calibration and run-level records. See
-[scoring and condition definitions](paper_alignment.md).
+The main-table reproduction uses archived USD costs without reconverting
+them, frozen effort labels, and full-precision calibration. It matches the
+28 Core30 rows and four-target Original/Pooled/Cross AMS at published
+precision. The older CNY summary command retains its separate frozen-rate
+conversion. See [scoring data](../artifacts/scoring/README.md) and
+[condition definitions](paper_alignment.md).
 
 ## Runtime setup
 
@@ -86,7 +89,7 @@ Repeat for each target configuration to generate new Harbor rewards and usage
 records. Compute the manuscript-defined score using
 `python scripts/compute_paper_ams.py --runs condition.csv`, with one row per
 task: `task_id,stratum,reward,cost_usd`. See [scoring protocol](paper_alignment.md)
-for required effort labels, rounded calibration limits, and historical data gaps.
+for frozen effort labels, full-precision calibration, and condition definitions.
 
 ## Generate a new trajectory-guided description
 

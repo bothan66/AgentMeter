@@ -1,0 +1,13 @@
+{
+  "archive": "fixed_trajectory_result_bundle_20260713",
+  "source_sha256": {
+    "paper_recompute_20260713_benchmark80_task_effort_calibration.csv": "0927135f51f2df9d5a26569653a395879f3112376fabd049b0c8b663f3071aae",
+    "paper_recompute_20260713_core30_balanced_tiers.csv": "45b64c6f3afb121085d5c80ec43a71e61c377364a01a41dd01b9b719f7ad6c70",
+    "paper_recompute_20260713_run_level_metrics.csv": "d25d2c672ac2eee6c525df2e74663c082d397f40fd459d9ea468530d134630ea",
+    "paper_recompute_20260713_final16_self_run_level_metrics.csv": "744bc0e7aca01c41d9e56f1ee9f3742aee7283fa41d668956d6dfd5aa3d77e4a",
+    "paper_recompute_20260713_final16_cross_run_level_metrics.csv": "e07183690bf8a29fd245774a9951de07550fe2b4a86df64c33d2d549dd03541b",
+    "paper_recompute_20260713_benchmark80_budget_grids_usd.json": "556f278e95e217c5d0da2d63f63ec8e5f40a1f7e36d6fbd84448bcbcdc19d9eb",
+    "paper_recompute_20260713_benchmark80_tau_usd.json": "23b90a8bd4f158881c5a81b13cf7870bcd443ad7182ba06c03e281a73d59d4b6"
+  },
+  "transform": "Select Core30 archived valid rows (including exceptions), Final16 Original/Self and optimized Cross rows; join archived effort strata. Retain numeric strings, remove private paths and exception text. Cross baseline copies are not counted as new runs."
+}

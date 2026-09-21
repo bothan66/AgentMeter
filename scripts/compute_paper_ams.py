@@ -14,7 +14,7 @@ from agentmeter.metrics.paper import paper_ams
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--runs', required=True, help='CSV: task_id,stratum,reward,cost_usd')
-    parser.add_argument('--calibration', default=str(ROOT / 'configs/paper_calibration.json'))
+    parser.add_argument('--calibration', default=str(ROOT / 'configs/paper_calibration_full_precision.json'))
     args = parser.parse_args()
     with open(args.runs, newline='') as f:
         rows = list(csv.DictReader(f))

@@ -27,12 +27,24 @@ not task.toml difficulty or labels inferred from a new run. Missing strata
 and duplicate task IDs are rejected. The CLI does not define a repeated-run
 aggregation policy or compute Pooled automatically.
 
-configs/paper_calibration.json transcribes the rounded budget/threshold
-values in the supplementary table. It implements the manuscript formula,
-but threshold-adjacent runs can differ from original full-precision scoring.
-Exact historical table reconstruction still requires task effort assignments,
-full-precision calibration and missing run-level records. The legacy metrics
-in metrics/agentmeter.py and metrics/cost.py are not final-paper AMS.
+The default `configs/paper_calibration_full_precision.json` preserves the
+archived USD budgets and thresholds. `configs/paper_calibration.json` remains
+the rounded supplementary-table transcription for comparison only.
+`artifacts/scoring/run_metrics.csv` includes the frozen effort strata and
+run-level inputs for 840 Core30 and 320 Final16 observations.
+
+```bash
+python scripts/reproduce_paper_tables.py
+```
+
+This command reproduces all 28 Core30 table rows and the four targets'
+Original/Pooled/Cross AMS at manuscript display precision. For Cross/Pooled,
+each task-source is an observation in a complete balanced grid; apply budget
+and failure thresholds before aggregation, not to averaged costs. Pooled
+is not the mean of separately computed source AMS values, because EFR
+multiplies the quality term. See [data provenance](../artifacts/scoring/README.md).
+The legacy metrics in metrics/agentmeter.py and metrics/cost.py are not
+final-paper AMS.
 
 ## Currency and archived scores
 

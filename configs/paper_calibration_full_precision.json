@@ -1,0 +1,38 @@
+{
+  "source": "Frozen paper_recompute_20260713 benchmark80 calibration",
+  "precision": "Full precision from archived JSON; costs retained as archived USD",
+  "currency": "USD",
+  "alpha": 0.6,
+  "strata": {
+    "Easy": {
+      "budgets_usd": [
+        0.00939218501736009,
+        0.01813695374565998,
+        0.03802092626375567,
+        0.07115833578532338,
+        0.09501100453127759
+      ],
+      "zero_reward_threshold_usd": 0.07039110221856058
+    },
+    "Medium": {
+      "budgets_usd": [
+        0.023818336962278586,
+        0.05087749073147767,
+        0.097445446360266,
+        0.2017265226858119,
+        0.34928339904666633
+      ],
+      "zero_reward_threshold_usd": 0.2970941564173484
+    },
+    "Hard": {
+      "budgets_usd": [
+        0.11216896369093157,
+        0.28031328193962224,
+        0.4583692343906314,
+        0.8215540281292297,
+        1.4548164538339323
+      ],
+      "zero_reward_threshold_usd": 1.0574392279173785
+    }
+  }
+}

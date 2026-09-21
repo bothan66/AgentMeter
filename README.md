@@ -122,7 +122,7 @@ cross-configuration evaluation. Task environments and verifiers remain fixed.
 a provider API key, and network access for images and dependencies. API calls
 incur provider charges.
 
-**1. Install and reproduce the released reward/cost statistics**
+**1. Install and reproduce the main result tables**
 
 ```bash
 git clone https://github.com/bothan66/AgentMeter.git
@@ -130,12 +130,15 @@ cd AgentMeter
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -e .
+python scripts/reproduce_paper_tables.py
 python scripts/reproduce_artifact_table.py
 ```
 
-The script prints Self rewards, pass counts, token usage, and USD costs, plus
-12 source-to-target Cross summaries from the included CSVs. No API or Docker
-is needed for this step.
+The first command recomputes all 28 Core30 rows and Final16
+Original/Self/Cross/Pooled AMS from **1,160 archived run records** and frozen
+full-precision calibration. The second prints additional reward/cost and
+transfer summaries. No API or Docker is needed for this step.
+[Scoring data and accounting](artifacts/scoring/README.md)
 
 **2. Run the paper's Qwen3.6-Plus × Codex example**
 
@@ -196,6 +199,15 @@ original public Python example that reads the file as a pattern.
 This illustrates output-contract clarification. The paired evaluation
 records track the resulting reward and execution cost.
 
+| Archived condition | Reward | Cost (USD) | Billable-component tokens |
+|:--|--:|--:|--:|
+| Original | 1.0 | 0.02238 | 67,380 |
+| Self rewrite | 1.0 | 0.01726 | 59,868 |
+
+These are historical Qwen × Codex observations, not a new smoke test or an
+estimate across repeated trials. The corresponding rows are included in the
+[run-level records](artifacts/scoring/run_metrics.csv).
+
 [Compare the complete pair](artifacts/agentmeter_opt_final16/descriptions/qwen36_codex/regex-log/) ·
 [Browse 16 selected examples](artifacts/agentmeter_opt_final16/README.md)
 
@@ -216,6 +228,7 @@ for attribution and applicable terms.
 | 16 executable task bundles | [benchmark_tasks/](benchmark_tasks/) |
 | Selected rewrites and Self/Cross results | [Released artifacts](artifacts/agentmeter_opt_final16/) |
 | Complete Core30 paper table | [28-pair CSV](artifacts/core30_paper_results.csv) |
+| Main-table scoring inputs | [1,160 run records and provenance](artifacts/scoring/) |
 | Harbor patches and provider routing | [Execution dependencies](docs/external_dependencies.md) |
 
 Runtime caches, credentials, and new trajectories are excluded from Git.

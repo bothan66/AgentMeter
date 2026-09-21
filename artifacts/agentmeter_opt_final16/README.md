@@ -76,10 +76,12 @@ Docker and provider access are required.
 `results/cross_task_results.csv` contains 192 Cross outcomes, filterable by
 task and source; `results/cross_summary.csv` contains pair aggregates.
 These are not results on this selected showcase alone. Per-example Self
-outcomes cannot be recovered from the aggregate Self CSV.
+outcomes cannot be recovered from the aggregate Self CSV, but are available
+in the newly released [run-level scoring records](../scoring/README.md).
 
 Run `python scripts/reproduce_artifact_table.py` to summarize those records.
 Raw costs are archived CNY; the script displays USD at the paper's frozen
 rate of 0.1471 USD/CNY. These are not current prices. The score field has not been
-reconciled with manuscript AMS. Full optimized-grid replay requires the
+reconciled with manuscript AMS; use `scripts/reproduce_paper_tables.py` for
+the manuscript metric from run-level USD inputs. Full optimized-grid replay requires the
 unreleased descriptions.
