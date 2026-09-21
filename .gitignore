@@ -26,4 +26,5 @@ dist/
 *.log
 *.zip
 *.pdf
+/proxy-auth/
 .DS_Store

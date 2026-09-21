@@ -5,6 +5,10 @@ only; a task checkout containing every selected ID is required.
 
 ## Harbor
 
+Use Python 3.12 or 3.13 for the combined Harbor and Opt environment. The
+pinned Harbor revision requires Python >=3.12; Python 3.11 supports only
+AgentMeter's scoring package and Opt dependencies without this Harbor version.
+
 The locally used Harbor base revision is
 `07fa4c80c0e729a4ec0cc3184e93a6d730024f81`.
 The four modified CLI adapters are preserved in
@@ -62,8 +66,9 @@ Supply credentials via environment variables. Copying `.env.example` does
 not load it automatically: export the values in your shell.
 The Codex reproduction example uses a provider implementing Responses.
 Other harnesses need their corresponding provider protocol and credentials.
-CLIProxyAPI is optional; the configuration template under
-`integrations/cliproxyapi/` does not include its implementation.
+CLIProxyAPI is optional. The modified source snapshot, configuration renderer,
+build and startup commands are included under
+[`integrations/cliproxyapi/`](../integrations/cliproxyapi/README.md).
 
 ## Storage and records
 

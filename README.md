@@ -118,7 +118,8 @@ cross-configuration evaluation. Task environments and verifiers remain fixed.
 
 ## Quick start
 
-**Requirements:** Python 3.11+. Live runs additionally require Docker access,
+**Requirements:** Python 3.11+ for scoring; Python 3.12–3.13 for Harbor + Opt.
+Live runs additionally require Docker access,
 a provider API key, and network access for images and dependencies. API calls
 incur provider charges.
 
@@ -230,6 +231,7 @@ for attribution and applicable terms.
 | Complete Core30 paper table | [28-pair CSV](artifacts/core30_paper_results.csv) |
 | Main-table scoring inputs | [1,160 run records and provenance](artifacts/scoring/) |
 | Harbor patches and provider routing | [Execution dependencies](docs/external_dependencies.md) |
+| Modified CLIProxyAPI source and route setup | [Proxy integration](integrations/cliproxyapi/) |
 
 Runtime caches, credentials, and new trajectories are excluded from Git.
 

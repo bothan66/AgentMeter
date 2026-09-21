@@ -1,0 +1,4 @@
+# Preserve literal HTML/JSON fixture whitespace in the hashed proxy snapshot.
+integrations/cliproxyapi/source/internal/auth/claude/html_templates.go whitespace=-blank-at-eol
+integrations/cliproxyapi/source/internal/auth/codex/html_templates.go whitespace=-blank-at-eol
+integrations/cliproxyapi/source/internal/translator/codex/openai/responses/codex_openai-responses_request_test.go whitespace=-blank-at-eol

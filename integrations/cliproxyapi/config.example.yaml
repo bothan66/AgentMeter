@@ -1,5 +1,7 @@
+# Documentation template. render_config.py writes literal values from environment
+# variables; do not assume CLIProxyAPI expands ${...} in YAML automatically.
 port: 8317
-host: ""
+host: "127.0.0.1"
 
 api-keys:
   - "${AGENTMETER_PROXY_CLIENT_KEY}"
@@ -7,9 +9,10 @@ api-keys:
 openai-compatibility:
   - name: example-provider
     base-url: "${UPSTREAM_OPENAI_BASE_URL}"
-    strip-unsupported-params: true
+    strip-unsupported-params: false
+    inject-prompt-cache: false
     api-key-entries:
       - api-key: "${UPSTREAM_OPENAI_API_KEY}"
     models:
-      - name: upstream-model-name
-        alias: public-model-alias
+      - name: YOUR_UPSTREAM_QWEN_MODEL_ID
+        alias: Qwen3.6+

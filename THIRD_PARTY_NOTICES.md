@@ -6,6 +6,7 @@ third-party benchmark data or adapter code.
 | Component | Source / terms | Release scope |
 |:--|:--|:--|
 | Harbor compatibility patch | laude-institute/harbor; Apache-2.0, copy in integrations/harbor/LICENSE | Four locally modified CLI adapters, base revision documented in docs/external_dependencies.md |
+| Modified CLIProxyAPI source snapshot | router-for-me/CLIProxyAPI; MIT, retained in integrations/cliproxyapi/source/LICENSE | Source and regression tests, identified by source-manifest.json; original upstream commit unavailable in the local snapshot |
 | Final16 task bundles | SkillsBench, Terminal-Bench-compatible and DA-Code-compatible local collections | Task-level original revision and redistribution notices still need reconciliation before public release |
 | Selected Original/rewritten description pairs | Benchmark-derived Original text and AgentMeter-Opt modifications; [catalog and attribution](artifacts/agentmeter_opt_final16/README.md#provenance-and-reuse) | Retained as research examples. Original content keeps its applicable terms; modifications are identified in the catalog. Review the description's own provenance separately from bundled third-party skills |
 | Bundled XLSX skill | `benchmark_tasks/skillsbench/xlsx-recover-data/environment/skills/xlsx/LICENSE.txt` | The included license expressly restricts copying and third-party distribution; establish applicable redistribution permission or exclude this material from a public artifact |

@@ -1,0 +1,6 @@
+/cli-proxy-api
+/config.yaml
+/*.local.yaml
+/.env
+/auths/
+/logs/

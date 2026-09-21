@@ -1,7 +1,7 @@
 # Architecture
 
-The release bundles selected benchmark tasks and keeps Harbor and CLIProxyAPI
-as external execution dependencies.
+The release bundles selected benchmark tasks and a modified CLIProxyAPI source
+snapshot. Harbor is installed from its pinned upstream revision plus patches.
 
 ## SkillsBench and Harbor
 
@@ -32,8 +32,8 @@ configuration maps a `(model, harness)` pair to one of three wire formats:
 OpenAI Responses, OpenAI Chat Completions, or Anthropic Messages.
 
 For production, CLIProxyAPI can expose these formats at a single local address.
-Only a sanitized config template and operational notes are included here; the
-upstream proxy remains an external component with its own license.
+The modified proxy source, configuration renderer and build instructions are
+included in `integrations/cliproxyapi/`, under its upstream MIT license.
 
 ## Code and tests
 
