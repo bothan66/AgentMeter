@@ -58,6 +58,63 @@ The bundled `lru-cache-with-ttl` reference solution previously reached the
 verifier with 14/15 tests passing; `test_evict_all_expired_picks_oldest` failed.
 Use the original task unchanged when comparing historical results.
 
+## Run Core30 or Full80
+
+The exact task selections are frozen in:
+
+- [`configs/task_lists/core30.public.txt`](../configs/task_lists/core30.public.txt)
+- [`configs/task_lists/full80.txt`](../configs/task_lists/full80.txt)
+
+Point `AGENTMETER_TASK_ROOT` to an upstream SkillsBench-compatible task checkout
+and execute one target pair over either frozen task list:
+
+```bash
+export AGENTMETER_TASK_ROOT=/path/to/skillsbench
+
+bash scripts/run_harbor_suite.sh configs/task_lists/core30.public.txt
+# or
+bash scripts/run_harbor_suite.sh configs/task_lists/full80.txt
+```
+
+Repeat for each target configuration to generate new Harbor rewards and usage
+records. Compute the manuscript-defined score using
+`python scripts/compute_paper_ams.py --runs condition.csv`, with one row per
+task: `task_id,stratum,reward,cost_usd`. See [scoring protocol](paper_alignment.md)
+for required effort labels, rounded calibration limits, and historical data gaps.
+
+## Generate a new trajectory-guided description
+
+To regenerate a description from an Original trajectory rather than replaying
+a released one:
+
+```bash
+python -m pip install -e '.[opt]'
+python agentmeter_opt/optimize_instruction.py \
+  --task-id regex-log \
+  --task-root benchmark_tasks/terminal_bench \
+  --baseline-result /path/to/original/agent/trajectory.json \
+  --combo qwen36_codex \
+  --model 'Qwen3.6+' \
+  --cli codex \
+  --adaptation-mode combo_adapted \
+  --candidate-only \
+  --offline-until-accepted \
+  --max-metric-calls 5 \
+  --reflection-model openai/qwen3.7-max \
+  --out-dir generated_reports/example
+```
+
+The paper uses Qwen3.7-Max for construction. Set the reflection model's
+provider credentials and use its corresponding model identifier; the
+construction provider may differ from the evaluation provider. Replace
+`--baseline-result` with the saved Original trajectory from the preceding
+run. Run these commands from the repository root.
+
+This command generates a candidate only. Evaluate it with the unchanged task
+verifier before reward-first, cost-second selection, then freeze the selected
+description before Self or Cross evaluation. Automated preservation gates are
+heuristics, not proof of semantic equivalence.
+
 ## Validation
 
 ```bash
