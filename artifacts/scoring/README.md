@@ -36,8 +36,12 @@ in this data table. No new model executions were performed to create it.
   bridges report fresh input separately from cache reads/writes; others
   include cache tokens in prompt input. `billable_component_tokens` is the
   archived non-double-counted input/cache/output total used for tokens/pass.
-  The three cache counters are preserved for inspection, not blindly added
-  to prompt input. Token totals alone are not monetary cost.
+  Cache-read counters are preserved for inspection, not blindly added to
+  prompt input. The separate cache-creation counter is omitted from this
+  compact table: its contribution remains in the archived cost and
+  billable-component total. This table reproduces scoring from recorded
+  costs, not a fresh provider invoice calculation. Token totals alone are
+  not monetary cost.
 - `steps` and `tool_calls` retain historical extraction counters. Harnesses
   can record different granularities; these are not standardized events.
 - All archived valid-run rows are retained, including zero rewards and
