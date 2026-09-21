@@ -12,12 +12,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_mock_api_runs_full_matrix(tmp_path: Path):
-    exp = Experiment.from_yaml(ROOT / "configs/experiments/smoke.example.yaml")
+    exp = Experiment.from_yaml(ROOT / "tests/fixtures/smoke.yaml")
     summaries = run_experiment(
         exp,
-        task_root=ROOT / "examples/toy_tasks",
+        task_root=ROOT / "tests/fixtures/toy_tasks",
         out=tmp_path / "runs",
-        runner_config=ROOT / "configs/runners.example.yaml",
+        runner_config=ROOT / "tests/fixtures/runners.yaml",
         resume=False,
         force=True,
     )
@@ -58,12 +58,12 @@ def test_real_api_key_header_not_recorded(tmp_path: Path, monkeypatch):
         encoding="utf-8",
     )
     monkeypatch.setenv("AGENTMETER_TEST_KEY", "real-key-placeholder")
-    exp = Experiment.from_yaml(ROOT / "configs/experiments/smoke.example.yaml")
+    exp = Experiment.from_yaml(ROOT / "tests/fixtures/smoke.yaml")
     exp = exp.__class__(**{**exp.__dict__, "models": ("model_a_mock",), "clis": ("cli_a_mock",)})
     with patch("urllib.request.urlopen", fake_urlopen):
         run_experiment(
             exp,
-            task_root=ROOT / "examples/toy_tasks",
+            task_root=ROOT / "tests/fixtures/toy_tasks",
             out=tmp_path / "runs",
             runner_config=cfg,
             resume=False,

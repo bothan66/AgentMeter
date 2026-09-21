@@ -1,4 +1,3 @@
 """Public AgentMeter toolkit."""
 
-__all__ = ["benchmark", "metrics", "trajectories"]
-
+__all__ = ["metrics", "trajectories"]

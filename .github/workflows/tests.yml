@@ -1,5 +1,8 @@
 name: tests
 
+permissions:
+  contents: read
+
 on:
   push:
   pull_request:
@@ -7,6 +10,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       matrix:
         python-version: ["3.11", "3.12"]
@@ -16,7 +20,15 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install -e '.[dev]'
-      - run: python scripts/public_release_check.py
+      - run: python tests/check_public_release.py
       - run: pytest -q
       - run: python scripts/reproduce_artifact_table.py
       - run: bash -n scripts/run_final16_condition.sh scripts/run_harbor_suite.sh
+      - name: Verify wheel installation independently of the source tree
+        shell: bash
+        run: |
+          python -m pip wheel --no-deps . --wheel-dir dist
+          python -m venv "$RUNNER_TEMP/agentmeter-wheel"
+          "$RUNNER_TEMP/agentmeter-wheel/bin/python" -m pip install dist/agentmeter-*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/agentmeter-wheel/bin/python" -c 'from agentmeter.metrics.paper import paper_ams; print("Installed AMS module OK")'

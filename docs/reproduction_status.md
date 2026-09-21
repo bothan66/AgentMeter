@@ -31,6 +31,12 @@ pinned Harbor version and both patches. Export the provider API key and base
 URL before running. Keep task outputs and temporary files on a disk with
 adequate space; Docker layer storage is configured separately.
 
+The `opt` installation extra pins GEPA 0.1.1 and LiteLLM 1.91.0 for this
+release; use Python 3.11–3.13 for this extra. Harbor is pinned separately in
+the execution setup. Use a repository
+commit ID when recording a reproduction, alongside the provider model ID,
+CLI version, task snapshot, pricing rules and calibration file.
+
 The real API self-check passed with GLM-5.3-Flash through CLIProxyAPI on
 2026-09-14: HTTP 200, completed response with output text, 17 input and 85
 output tokens. Run `python scripts/probe_responses.py` with provider variables
@@ -120,11 +126,11 @@ decisions against the original requirements when selecting candidates.
 ```bash
 python -m pip install -e '.[dev]'
 pytest -q
-python scripts/public_release_check.py
+python tests/check_public_release.py
 ```
 
-Local tests cover metric behavior, task/description consistency and launcher
-output handling. Mock pipeline checks exercise report generation.
+Local tests cover metric behavior, task/description consistency, launcher
+output handling and provider-response normalization.
 Candidate generation and task evaluation are separate steps: evaluate a
 candidate with the original verifier before source-side selection and freezing.
 [Description notes](description_notes.md) document example-specific interpretation.

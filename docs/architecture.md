@@ -1,6 +1,7 @@
 # Architecture
 
-AgentMeter does not vendor SkillsBench, Harbor, or CLIProxyAPI.
+The release bundles selected benchmark tasks and keeps Harbor and CLIProxyAPI
+as external execution dependencies.
 
 ## SkillsBench and Harbor
 
@@ -9,8 +10,9 @@ environment, skills, tests, verifier, solution, and public input data. Harbor
 owns task execution. AgentMeter receives only task paths and run artifacts.
 
 The adapters in `integrations/skillsbench` discover valid task layouts and
-build manifests. The adapters in `integrations/harbor` launch or describe
-Harbor evaluations without importing Harbor internals.
+build manifests. The launchers in `scripts/` execute paired examples or
+frozen task lists through Harbor. `integrations/harbor` contains compatibility
+patches and task/evaluation helpers.
 
 ## AgentMeter and AgentMeter-Opt
 
@@ -32,3 +34,12 @@ OpenAI Responses, OpenAI Chat Completions, or Anthropic Messages.
 For production, CLIProxyAPI can expose these formats at a single local address.
 Only a sanitized config template and operational notes are included here; the
 upstream proxy remains an external component with its own license.
+
+## Code and tests
+
+`src/agentmeter/metrics/paper.py` implements manuscript AMS.
+`agentmeter_opt/` implements trajectory-guided candidate construction and
+preservation checks; its shared execution helpers live in
+`scripts/harness_lib.py`. Archived results and task descriptions live in
+`artifacts/`. Simulation data is isolated in `tests/fixtures/`; production
+runner discovery reads local configuration files only.

@@ -13,11 +13,12 @@ dependencies = ["PyYAML>=6"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
-opt = ["gepa", "litellm"]
+opt = ["gepa==0.1.1", "litellm==1.91.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+norecursedirs = ["fixtures"]
 pythonpath = [".", "src", "scripts"]

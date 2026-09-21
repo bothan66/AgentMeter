@@ -1,5 +1,0 @@
-host: localhost
-port: 8765
-mode: mock
-require_api_key: false
-api_key_env: AGENTMETER_API_KEY

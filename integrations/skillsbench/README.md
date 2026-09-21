@@ -2,7 +2,8 @@
 
 This integration contains the minimal code AgentMeter needs to recognize and run SkillsBench/Harbor-style tasks.
 
-It does not vendor the SkillsBench repository. Real tasks remain external and are referenced through:
+The release bundles 16 tasks under `benchmark_tasks/`. For a larger task
+selection, point the suite launcher to a complete external checkout:
 
 ```bash
 export AGENTMETER_TASK_ROOT=/path/to/skillsbench/tasks
@@ -25,4 +26,3 @@ The `task.toml` metadata is used for manifest generation:
 - `metadata.category`
 - `metadata.tags`
 - `verifier.timeout_sec`
-

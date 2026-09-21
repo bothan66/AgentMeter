@@ -23,16 +23,8 @@ python scripts/build_manifest_from_harbor_tasks.py \
   --eval-command 'harbor run -p {task_dir} -a oracle'
 ```
 
-For smoke tests that must prove the agent runs inside the copied task directory, use a marker checker instead of oracle:
-
-```text
-test -f {task_dir}/.agentmeter_agent_marker.json && test -f {run_dir}/agent_execution_marker.json
-```
-
-The harness copies each task into:
-
-```text
-runs/<exp>/tasks/<task_id>/<model>__<cli>/attempt_001/task/
-```
-
-The real source task directory is not modified.
+Run a released task with `scripts/run_final16_condition.sh`, or a task list
+with `scripts/run_harbor_suite.sh`. The Final16 launcher retains evaluated
+instructions under `jobs/<run>/task_snapshots/` and saves Harbor results and
+trajectories beside them. See [execution setup](../../docs/external_dependencies.md)
+for the pinned Harbor revision and compatibility patches.

@@ -1,5 +1,5 @@
 name: smoke_example
-manifest: configs/manifests/smoke.example.csv
+manifest: tests/fixtures/smoke.csv
 models:
   - model_a_mock
   - model_b_mock

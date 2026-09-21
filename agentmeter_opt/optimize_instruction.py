@@ -108,8 +108,6 @@ COMBO_ADAPTED_EFFICIENCY_OBJECTIVE = textwrap.dedent(
 DEFAULT_RUNNER_CONFIGS = [
     ROOT / "configs" / "runners.local.yaml",
     ROOT / "configs" / "runners" / "runners.local.yaml",
-    ROOT / "configs" / "runners.example.yaml",
-    ROOT / "configs" / "runners" / "runners.example.yaml",
 ]
 COMBO_ALIASES = {
     "qwen36_kimi_cli": ("Qwen3.6+", "kimi-cli"),

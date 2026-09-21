@@ -54,14 +54,15 @@ Set `OPENAI_BASE_URL` to the proxy's `/v1` address and `OPENAI_API_KEY` to
 the proxy's client key, then run `python scripts/probe_responses.py` before
 launching a task. From a task container, use a host address reachable from
 that container rather than `127.0.0.1`. Host-only probes and container
-execution may therefore need different base URLs.
+execution may therefore need different base URLs. The proxy must listen
+on the selected interface and permit connections from the task network;
+a successful host probe alone does not verify container reachability.
 
 Supply credentials via environment variables. Copying `.env.example` does
 not load it automatically: export the values in your shell.
 The Codex reproduction example uses a provider implementing Responses.
 Other harnesses need their corresponding provider protocol and credentials.
-The local mock gateway is a development fixture, not a general production
-protocol converter. CLIProxyAPI is optional; the configuration template under
+CLIProxyAPI is optional; the configuration template under
 `integrations/cliproxyapi/` does not include its implementation.
 
 ## Storage and records
