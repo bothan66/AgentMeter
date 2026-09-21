@@ -16,7 +16,7 @@
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Tasks](https://img.shields.io/badge/benchmark-80%20tasks-7c3aed)
 
-[Overview](#overview) · [Results](#results) · [Examples](#description-examples) · [Quick Start](#quick-start) · [Citation](#citation)
+[Overview](#overview) · [Method](#method) · [Results](#results) · [Examples](#description-examples) · [Quick Start](#quick-start) · [Citation](#citation)
 
 </div>
 
@@ -46,11 +46,41 @@ The method constructs source-conditioned descriptions while retaining the
 task environments and verifiers. See the [example catalog](artifacts/agentmeter_opt_final16/README.md)
 for instruction pairs and [technical notes](docs/description_notes.md) for their interpretation.
 
+## Method
+
+**Score the model–harness pair.** AMS combines graded task quality (TQ),
+quality achieved within fixed cost budgets (AUBQC), and the rate of
+zero-reward runs exceeding a calibrated cost threshold (EFR). It averages
+equally over three fixed observed-effort strata:
+
+$$
+\mathrm{AMS}=\frac{1}{3}\sum_{s\in\{\mathrm{Easy,Medium,Hard}\}}
+\left[0.6\,\mathrm{TQ}_s+0.4\,\mathrm{AUBQC}_s\right]
+\left[1-\mathrm{EFR}_s\right].
+$$
+
+Strata and cost calibration come from a fixed reference set. The same
+calibration and billing rules apply to every evaluated pair.
+[Scoring implementation](src/agentmeter/metrics/paper.py) ·
+[Calibration and protocol](docs/paper_alignment.md)
+
+**Evaluate across trajectory-guided descriptions.** AgentMeter-Opt uses the
+original instruction and a source pair's trajectory to identify description
+friction, generate candidate rewrites, and screen them for task preservation.
+Source-side evaluation selects by reward first and cost second. Selected
+descriptions are frozen before evaluation on other target pairs, yielding
+a shared, source-balanced description set. The original task environment
+and verifier are retained.
+
+[Optimizer](agentmeter_opt/) · [Released instruction pairs](artifacts/agentmeter_opt_final16/README.md)
+
 ## Results
 
 **Different objectives select different LM–CLI pairs.** On Core30,
 Qwen3.6-Plus × Kimi Code CLI achieves the highest AMS, while
 Qwen3.6-Plus × Codex CLI has the lowest tokens and USD per pass.
+Holding the model fixed, Qwen3.6-Plus scores **0.525 with Kimi** and
+**0.325 with Claude Code**: a **0.200 AMS gap** from changing the harness.
 
 | Core30 objective | Configuration | Result |
 |:--|:--|--:|
@@ -63,6 +93,14 @@ Qwen3.6-Plus × Codex CLI has the lowest tokens and USD per pass.
 <summary>View selected Core30 configurations and rank agreement</summary>
 
 Selected configurations from the complete 28-pair grid:
+
+[Download all 28 manuscript results (CSV)](artifacts/core30_paper_results.csv).
+These are transcribed from the paper's complete Core30 table, not recomputed
+from released trajectories. Tokens/pass and USD/pass include all valid-run
+usage, divided by the number of fully passed tasks.
+CSV abbreviations: Qwen = Qwen3.6-Plus; MM = MiniMax-M2.5; GPT = GPT-5.3-Codex;
+GLM = GLM-5.1; DS = DeepSeek-V4-Pro; Claude = Claude Sonnet 4.6;
+Gem. = Gemini 3.5 Flash. The suffix identifies the CLI.
 
 | Rank | Model | CLI | Pass | Tokens / pass ↓ | USD / pass ↓ | AMS ↑ |
 |--:|:--|:--|--:|--:|--:|--:|
@@ -81,6 +119,11 @@ Core and Full rankings remain strongly aligned on their shared configurations
 **Description choice also changes the comparison.** Source-balanced Pooled
 evaluation raises macro AMS from **0.333 to 0.458** in the manuscript;
 Cross-only reaches **0.434**.
+
+Original uses the collected task description. Self uses the target pair's
+own source-conditioned rewrite; Cross uses rewrites from other pairs.
+Pooled weights all description sources equally, evaluating every target
+against the same description set rather than selecting its best source.
 
 | Target pair | Original AMS | Pooled AMS | Cross-only AMS | Δ Pooled |
 |:--|--:|--:|--:|--:|
