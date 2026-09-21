@@ -34,14 +34,17 @@ in this data table. No new model executions were performed to create it.
   the original provider-specific cache accounting.
 - `input_tokens` retains the archive's raw prompt counter. Some Claude
   bridges report fresh input separately from cache reads/writes; others
-  include cache tokens in prompt input. `billable_component_tokens` is the
-  archived non-double-counted input/cache/output total used for tokens/pass.
-  Cache-read counters are preserved for inspection, not blindly added to
-  prompt input. The separate cache-creation counter is omitted from this
-  compact table: its contribution remains in the archived cost and
-  billable-component total. This table reproduces scoring from recorded
-  costs, not a fresh provider invoice calculation. Token totals alone are
-  not monetary cost.
+  include cache tokens in prompt input. `billable_component_tokens` retains
+  the archived accounting total used for tokens/pass. Cache-read counters
+  are preserved for inspection, not blindly added to prompt input.
+- `cache_creation_input_tokens` displays the archived counter for Claude
+  Code targets only (210 rows). It is blank for other harnesses by display
+  convention, not a claim of zero cache creation or absence of upstream
+  measurements. Archived zero values are retained, including zeros produced
+  by the historical extractor's missing-field default. This display selection
+  does not change `cost_usd` or `billable_component_tokens`, and must not be
+  used to infer a new billing formula. The table reproduces scoring from
+  recorded costs, not a fresh provider invoice calculation.
 - `steps` and `tool_calls` retain historical extraction counters. Harnesses
   can record different granularities; these are not standardized events.
 - All archived valid-run rows are retained, including zero rewards and

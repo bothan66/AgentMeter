@@ -47,6 +47,19 @@ def test_all_example_results_match_catalog():
     assert table in (ROOT / 'artifacts/agentmeter_opt_final16/README.md').read_text()
 
 
+def test_cache_creation_display_scope():
+    rows, _ = load_inputs()
+    cc_rows = 0
+    for row in rows:
+        value = row['cache_creation_input_tokens']
+        if row['target'].endswith(('__Claude_Code', '__claude-code')):
+            cc_rows += 1
+            assert value != '' and int(value) >= 0
+        else:
+            assert value == ''  # Not displayed, not measured zero.
+    assert cc_rows == 210
+
+
 def test_reject_incomplete_duplicate_or_inconsistent_grid():
     rows, _ = load_inputs()
     for invalid in [rows[:-1], rows + [rows[0]]]:
