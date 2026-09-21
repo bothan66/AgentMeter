@@ -16,6 +16,7 @@ for all four Final16 targets to manuscript display precision.
 | Material | Scope |
 |:--|:--|
 | `run_metrics.csv` | 840 Core30 rows + 64 Final16 Original + 64 Self + 192 Cross = 1,160 observations |
+| `diagnostics.csv` | Same 1,160 run keys; archived steps, tool calls and alternate cache-read counter |
 | `provenance.json` | Original archive filenames and SHA256 checksums, plus extraction policy |
 | [`paper_calibration_full_precision.json`](../../configs/paper_calibration_full_precision.json) | Frozen USD budget grids and expensive-failure thresholds |
 
@@ -29,14 +30,16 @@ in this data table. No new model executions were performed to create it.
   difficulty. Core30 has a balanced 10/10/10 assignment; Final16 uses its
   tasks' Full80 assignments. The same task may therefore have different
   strata across these two experiments.
-- `cost_usd` is the archived per-run USD cost. Do not reconvert it using the
-  rounded CNY rate in the separate descriptive-summary script. It includes
-  the original provider-specific cache accounting.
+- `cost_usd` is the archived per-run USD cost. Both table scripts use it
+  unchanged, without reconversion or repricing. Historical accounting uses
+  `1 / 6.7972` USD/CNY where currency conversion applies.
 - `input_tokens` retains the archive's raw prompt counter. Some Claude
   bridges report fresh input separately from cache reads/writes; others
   include cache tokens in prompt input. `billable_component_tokens` retains
-  the archived accounting total used for tokens/pass. Cache-read counters
-  are preserved for inspection, not blindly added to prompt input.
+  the archived accounting total used for tokens/pass. `cached_input_tokens`
+  retains the primary archived cache-hit counter. The alternate
+  `cache_read_input_tokens` is in `diagnostics.csv`; the two are not additive
+  and were extracted through different fields. Neither is silently rewritten.
 - `cache_creation_input_tokens` displays the archived counter for Claude
   Code targets only (210 rows). It is blank for other harnesses by display
   convention, not a claim of zero cache creation or absence of upstream
@@ -45,8 +48,9 @@ in this data table. No new model executions were performed to create it.
   does not change `cost_usd` or `billable_component_tokens`, and must not be
   used to infer a new billing formula. The table reproduces scoring from
   recorded costs, not a fresh provider invoice calculation.
-- `steps` and `tool_calls` retain historical extraction counters. Harnesses
-  can record different granularities; these are not standardized events.
+- `diagnostics.csv` preserves `steps` and `tool_calls` unchanged. Harnesses
+  can record different granularities and missing counters can appear as zero;
+  these fields are not used in the main result tables or AMS.
 - All archived valid-run rows are retained, including zero rewards and
   exceptions. `has_exception` records presence, not a new validity filter.
   Core30 contains 66 such exception-marked observations.

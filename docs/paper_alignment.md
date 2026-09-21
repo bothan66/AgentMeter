@@ -48,15 +48,17 @@ final-paper AMS.
 
 ## Currency and archived scores
 
-Public descriptive tables use USD at the paper's frozen conversion:
-1 CNY = 0.1471 USD. Raw CSVs retain original CNY fields. This is a historical
-accounting convention, not a current price recommendation.
+Both reproduction scripts use archived `cost_usd` without repricing. The
+historical conversion is 1 / 6.7972 USD/CNY, approximately 0.1471. Legacy CSVs
+retain original CNY fields; manually using the rounded rate can change the
+last displayed decimal. This is historical accounting, not current pricing.
 
 self_summary.csv's AgentMeterScore is an archived legacy field, not the
 manuscript score; it must not be relabeled as AMS. The public table script
-omits it. GLM Original cost converts to approximately USD 3.370 from the
-released aggregate, while the paper table lists 3.371. This small discrepancy
-remains unresolved and is not silently adjusted to match the paper.
+omits it. For example, GLM Original totals USD 3.37084 in the archived
+run-level records, rounding to the paper's 3.371. Re-converting the legacy
+CNY aggregate at the rounded 0.1471 rate instead yields 3.370 at three
+decimals; the unified scripts avoid that second conversion.
 
 ## Conditions and counts
 

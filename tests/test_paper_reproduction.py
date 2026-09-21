@@ -4,6 +4,7 @@ from copy import deepcopy
 import pytest
 
 from reproduce_paper_tables import ROOT, compute_tables, example_table, load_inputs, validate_grid
+from reproduce_artifact_table import descriptive_tables
 
 
 def short_pair(target):
@@ -58,6 +59,31 @@ def test_cache_creation_display_scope():
         else:
             assert value == ''  # Not displayed, not measured zero.
     assert cc_rows == 210
+
+
+def test_diagnostics_preserve_one_to_one_run_keys():
+    rows, _ = load_inputs()
+    with (ROOT / 'artifacts/scoring/diagnostics.csv').open() as f:
+        diagnostics = list(csv.DictReader(f))
+    keys = ['dataset', 'target', 'source', 'condition', 'task_id']
+    key = lambda r: tuple(r[k] for k in keys)
+    assert len(diagnostics) == len({key(r) for r in diagnostics}) == 1160
+    assert {key(r) for r in diagnostics} == {key(r) for r in rows}
+    assert not {'steps', 'tool_calls', 'cache_read_input_tokens'} & rows[0].keys()
+
+
+def test_descriptive_tables_use_same_costs_as_main_tables():
+    inputs = load_inputs()
+    _, final = compute_tables(*inputs)
+    summary, transfers = descriptive_tables(*inputs)
+    assert len(summary) == 8 and len(transfers) == 12
+    for r in summary:
+        ref = final[r['target']][r['condition']]
+        assert r['cost'] == ref['cost'] and r['tokens'] == ref['tokens']
+    for target in final:
+        selected = [r for r in transfers if r['target'] == target]
+        assert sum(r['after']['cost'] for r in selected) == pytest.approx(final[target]['Cross']['cost'])
+        assert all(r['before']['cost'] == final[target]['Original']['cost'] for r in selected)
 
 
 def test_reject_incomplete_duplicate_or_inconsistent_grid():

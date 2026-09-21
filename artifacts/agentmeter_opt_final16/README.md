@@ -102,9 +102,9 @@ These are not results on this selected showcase alone. Per-example Self
 outcomes cannot be recovered from the aggregate Self CSV, but are available
 in the newly released [run-level scoring records](../scoring/README.md).
 
-Run `python scripts/reproduce_artifact_table.py` to summarize those records.
-Raw costs are archived CNY; the script displays USD at the paper's frozen
-rate of 0.1471 USD/CNY. These are not current prices. The score field has not been
-reconciled with manuscript AMS; use `scripts/reproduce_paper_tables.py` for
-the manuscript metric from run-level USD inputs. Full optimized-grid replay requires the
-unreleased descriptions.
+Run `python scripts/reproduce_artifact_table.py` for descriptive summaries
+and `python scripts/reproduce_paper_tables.py` for AMS. Both now read the
+same run-level USD inputs, without changing historical accounting.
+The CNY files in `results/` remain unchanged as legacy source tables; their
+`AgentMeterScore` field is not manuscript AMS. Full optimized-grid replay
+requires the unreleased descriptions.

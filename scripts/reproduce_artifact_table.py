@@ -1,35 +1,43 @@
 #!/usr/bin/env python3
-"""Recompute descriptive results from the released CSVs (no API required)."""
-import csv
-from collections import defaultdict
-from pathlib import Path
+"""Summarize Final16 from the same archived USD records as the AMS tables."""
+from reproduce_paper_tables import load_inputs, summarize
 
-ROOT = Path(__file__).resolve().parents[1]
-CNY_TO_USD = 0.1471  # Manuscript frozen rate, not a live exchange rate.
+
+def descriptive_tables(rows, calibration):
+    rows = [r for r in rows if r['dataset'] == 'final16']
+    targets = sorted({r['target'] for r in rows})
+    summary = []
+    transfers = []
+    for target in targets:
+        for condition in ['Original', 'Self']:
+            selected = [r for r in rows if r['target'] == target and r['condition'] == condition]
+            summary.append(dict(target=target, condition=condition, **summarize(selected, calibration)))
+        baseline = [r for r in rows if r['target'] == target and r['condition'] == 'Original']
+        before = summarize(baseline, calibration)
+        for source in targets:
+            if source == target:
+                continue
+            selected = [r for r in rows if r['target'] == target and r['source'] == source and r['condition'] == 'Cross']
+            after = summarize(selected, calibration)
+            transfers.append(dict(source=source, target=target, before=before, after=after))
+    return summary, transfers
 
 
 def main():
-    result_dir = ROOT / 'artifacts/agentmeter_opt_final16/results'
-    with (result_dir / 'self_summary.csv').open(newline='') as f:
-        rows = list(csv.DictReader(f))
-    print('| Target | Condition | N | Mean reward | Full passes | Total cost (USD) | Input tokens | Cached input | Output tokens |')
-    print('|:--|:--|--:|--:|--:|--:|--:|--:|--:|')
-    for r in rows:
-        print(f"| {r['combo']} | {r['variant']} | {r['n_tasks']} | {float(r['mean_reward']):.4f} | {r['full_pass_count']} | {float(r['total_cost_cny']) * CNY_TO_USD:.4f} | {r['total_input_tokens']} | {r['total_cached_tokens']} | {r['total_output_tokens']} |")
-    groups = defaultdict(list)
-    with (result_dir / 'cross_task_results.csv').open(newline='') as f:
-        for r in csv.DictReader(f):
-            groups[(r['source_combo'], r['target_combo'])].append(r)
-    print('\n| Source → Target | N | Original reward | Cross reward | Cost change |')
-    print('|:--|--:|--:|--:|--:|')
-    for (source, target), items in sorted(groups.items()):
-        before = sum(float(r['baseline_cost_cny_model_specific']) for r in items)
-        after = sum(float(r['optimized_cost_cny_model_specific']) for r in items)
-        br = sum(float(r['baseline_reward']) for r in items) / len(items)
-        ar = sum(float(r['optimized_reward']) for r in items) / len(items)
-        delta = f'{100 * (after / before - 1):+.2f}%' if before else 'N/A'
-        print(f'| {source} → {target} | {len(items)} | {br:.4f} | {ar:.4f} | {delta} |')
-    print('\nCosts convert archived CNY at the manuscript frozen rate 1 CNY = 0.1471 USD, not current prices. Cached input is a subset of input; do not add it again. Cross baselines repeat across sources. This table does not recompute paper AMS.')
+    summary, transfers = descriptive_tables(*load_inputs())
+    print('| Target | Condition | N | Mean reward | Full passes | Total cost (USD) | Archived accounting tokens |')
+    print('|:--|:--|--:|--:|--:|--:|--:|')
+    for r in summary:
+        print(f"| {r['target']} | {r['condition']} | {r['n']} | {r['reward']:.4f} | {r['passes']} | {r['cost']:.5f} | {r['tokens']} |")
+    print('\n| Source → Target | N | Original reward | Cross reward | Original USD | Cross USD | Cost change |')
+    print('|:--|--:|--:|--:|--:|--:|--:|')
+    for r in transfers:
+        b, a = r['before'], r['after']
+        change = f"{100 * (a['cost'] / b['cost'] - 1):+.2f}%" if b['cost'] else 'N/A'
+        print(f"| {r['source']} → {r['target']} | {a['n']} | {b['reward']:.4f} | {a['reward']:.4f} | {b['cost']:.5f} | {a['cost']:.5f} | {change} |")
+    print('\nUses archived cost_usd without reconversion or repricing. '
+          'Original baselines repeat for comparison, not as additional executions. '
+          'Historical extraction counters are in artifacts/scoring/diagnostics.csv.')
 
 
 if __name__ == '__main__':

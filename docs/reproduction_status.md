@@ -15,16 +15,17 @@ Full-study Self aggregates and 192 Cross records are also included.
 
 ## Scoring and accounting
 
-Public tables display USD using the paper's fixed conversion,
-1 CNY = 0.1471 USD. Raw CSV fields retain CNY. Use the manuscript scorer in
+Public tables use the same archived `cost_usd` values; historical conversion
+uses 1 / 6.7972 USD/CNY (approximately 0.1471). Legacy CSVs retain CNY.
+Use the manuscript scorer in
 `metrics/paper.py` for AMS; the historical `AgentMeterScore` CSV field and
 legacy diagnostic functions are not the final manuscript metric.
 
 The main-table reproduction uses archived USD costs without reconverting
 them, frozen effort labels, and full-precision calibration. It matches the
 28 Core30 rows and four-target Original/Pooled/Cross AMS at published
-precision. The older CNY summary command retains its separate frozen-rate
-conversion. See [scoring data](../artifacts/scoring/README.md) and
+precision. The descriptive-summary command now uses the same run-level
+USD inputs. See [scoring data](../artifacts/scoring/README.md) and
 [condition definitions](paper_alignment.md).
 
 ## Runtime setup
