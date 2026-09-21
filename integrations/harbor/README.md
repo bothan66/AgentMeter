@@ -1,6 +1,17 @@
 # Harbor Integration
 
-This folder documents how AgentMeter uses Harbor / SkillsBench task layouts without vendoring the Harbor repository.
+This folder preserves AgentMeter's Harbor adapters and patches. Prepare the
+pinned runtime from the repository root with:
+
+```bash
+bash scripts/bootstrap_execution.sh
+```
+
+The script clones Harbor into the ignored `vendor/` directory, checks out the
+locked revision, applies both patches exactly once, and installs it into the
+active Python environment. It never reads provider credentials. The upstream
+source is fetched rather than duplicated in this repository; pins are recorded
+in `integrations/execution-lock.json`.
 
 Expected real task layout:
 

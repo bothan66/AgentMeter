@@ -42,7 +42,8 @@ jobs:
       - run: pytest -q
       - run: python scripts/reproduce_artifact_table.py
       - run: python scripts/reproduce_paper_tables.py
-      - run: bash -n scripts/run_final16_condition.sh scripts/run_harbor_suite.sh
+      - run: bash -n scripts/bootstrap_execution.sh scripts/run_final16_condition.sh scripts/run_harbor_suite.sh
+      - run: bash scripts/bootstrap_execution.sh --help
       - name: Verify wheel installation independently of the source tree
         shell: bash
         run: |

@@ -1,0 +1,18 @@
+{
+  "harbor": {
+    "repository": "https://github.com/laude-institute/harbor.git",
+    "commit": "07fa4c80c0e729a4ec0cc3184e93a6d730024f81",
+    "patches": [
+      "integrations/harbor/compatibility.patch",
+      "integrations/harbor/provider-auth.patch"
+    ]
+  },
+  "skillsbench": {
+    "repository": "https://github.com/benchflow-ai/skillsbench.git",
+    "commit": "be06b4995c75b384b9295b94d18a4531400bb821",
+    "task_root": "tasks"
+  },
+  "agents": {
+    "codex": "0.153.0"
+  }
+}

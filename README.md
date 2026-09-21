@@ -143,8 +143,15 @@ transfer summaries. No API or Docker is needed for this step.
 
 **2. Run the paper's Qwen3.6-Plus × Codex example**
 
-First install the [pinned Harbor runtime and two patches](docs/external_dependencies.md#harbor).
-Then export credentials and run Original and Self on `regex-log`:
+First install the pinned Harbor runtime and AgentMeter patches:
+
+```bash
+bash scripts/bootstrap_execution.sh
+```
+
+The 16 executable paper examples are already included under `benchmark_tasks/`;
+the bootstrap does not download a separate task repository. Then export
+credentials and run Original and Self on `regex-log`:
 
 ```bash
 export AGENTMETER_HARBOR_BIN=harbor
