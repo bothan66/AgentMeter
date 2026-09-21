@@ -55,3 +55,20 @@ def test_invalid_batch_creates_no_partial_run(tmp_path):
                                 env=env, capture_output=True)
         assert result.returncode == 3
         assert not jobs.exists()
+
+
+def test_suite_preflight_and_final_line_without_newline(tmp_path):
+    task_list = tmp_path / 'tasks.txt'
+    jobs = tmp_path / 'jobs'
+    env = dict(os.environ, AGENTMETER_MODEL='test', AGENTMETER_AGENT='codex',
+               AGENTMETER_HARBOR_BIN='/bin/true', AGENTMETER_JOBS_DIR=str(jobs),
+               AGENTMETER_TASK_ROOT=str(ROOT / 'benchmark_tasks'))
+    command = ['bash', str(ROOT / 'scripts/run_harbor_suite.sh'), str(task_list)]
+    for content in ['regex-log\nmissing-task', 'regex-log\nregex-log', '']:
+        task_list.write_text(content)
+        result = subprocess.run(command, env=env, capture_output=True)
+        assert result.returncode == 3
+        assert not jobs.exists()
+    task_list.write_text('regex-log')
+    subprocess.run(command, env=env, check=True, capture_output=True)
+    assert jobs.is_dir()
