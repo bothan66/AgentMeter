@@ -19,11 +19,11 @@ that all historical paper runs used this exact runtime.
 From an activated Python 3.12–3.13 environment at the AgentMeter repository root:
 
 ```bash
-bash scripts/setup_agentmeter_runtime.sh
+agentmeter setup
 export AGENTMETER_HARBOR_BIN=harbor
 ```
 
-The bootstrap prepares Harbor only. The 16 released task bundles are already
+The setup command prepares Harbor only. The 16 released task bundles are already
 included. For larger Core30/Full80 selections, keep a separate compatible task
 checkout outside this repository and set `AGENTMETER_TASK_ROOT` to it. Exact
 dependency and task-source pins are machine-readable in
@@ -50,12 +50,13 @@ can reject requests because no bearer credential was sent. See the
 [official configuration reference](https://developers.openai.com/codex/config-reference/).
 
 The same patch preserves full provider model IDs for custom endpoints.
-For GLM through a Chat Completions upstream, a minimal CLIProxyAPI route is
-provided in `integrations/cliproxyapi/glm.example.yaml`. The client model is
-`glm5.3-flash`; the upstream ID is `ZHIPU/GLM-5.3-Flash`.
+For a Chat Completions upstream, `agentmeter proxy-config` generates a private
+CLIProxyAPI route with explicit client aliases and provider model IDs. The
+[proxy guide](../integrations/cliproxyapi/README.md) uses the paper's
+Qwen3.6-Plus configuration.
 
 Set `OPENAI_BASE_URL` to the proxy's `/v1` address and `OPENAI_API_KEY` to
-the proxy's client key, then run `python scripts/probe_responses.py` before
+the proxy's client key, then run `agentmeter probe` before
 launching a task. From a task container, use a host address reachable from
 that container rather than `127.0.0.1`. Host-only probes and container
 execution may therefore need different base URLs. The proxy must listen

@@ -37,18 +37,22 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install -e '.[dev]'
+      - run: ruff check src/agentmeter tests
+      - run: ruff format --check src/agentmeter tests
       - run: python tests/check_public_release.py
-      - run: python scripts/check_no_secrets.py
       - run: pytest -q
-      - run: python scripts/reproduce_artifact_table.py
-      - run: python scripts/reproduce_paper_tables.py
-      - run: bash -n scripts/setup_agentmeter_runtime.sh scripts/run_agentmeter_comparison.sh scripts/run_agentmeter_suite.sh
-      - run: bash scripts/setup_agentmeter_runtime.sh --help
+      - run: agentmeter tables
+      - run: agentmeter tables --descriptive
+      - run: agentmeter setup --help
       - name: Verify wheel installation independently of the source tree
         shell: bash
         run: |
           python -m pip wheel --no-deps . --wheel-dir dist
           python -m venv "$RUNNER_TEMP/agentmeter-wheel"
           "$RUNNER_TEMP/agentmeter-wheel/bin/python" -m pip install dist/agentmeter-*.whl
+          export AGENTMETER_REPO_ROOT="$GITHUB_WORKSPACE"
           cd "$RUNNER_TEMP"
-          "$RUNNER_TEMP/agentmeter-wheel/bin/python" -c 'from agentmeter.metrics.paper import paper_ams; print("Installed AMS module OK")'
+          "$RUNNER_TEMP/agentmeter-wheel/bin/python" -m agentmeter --help
+          "$RUNNER_TEMP/agentmeter-wheel/bin/python" -m agentmeter optimize --help
+          "$RUNNER_TEMP/agentmeter-wheel/bin/python" -m agentmeter score --help
+          "$RUNNER_TEMP/agentmeter-wheel/bin/python" -m agentmeter tables

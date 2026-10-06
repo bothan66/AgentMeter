@@ -1,19 +1,24 @@
 # Harbor Integration
 
-This folder preserves AgentMeter's Harbor adapters and patches. Prepare the
+This folder preserves AgentMeter's Harbor compatibility patches. Prepare the
 pinned runtime from the repository root with:
 
 ```bash
-bash scripts/setup_agentmeter_runtime.sh
+agentmeter setup
 ```
 
-The script clones Harbor into the ignored `vendor/` directory, checks out the
+The Python runtime clones Harbor into the ignored `vendor/` directory, checks out the
 locked revision, applies both patches exactly once, and installs it into the
 active Python environment. It never reads provider credentials. The upstream
 source is fetched rather than duplicated in this repository; pins are recorded
 in `integrations/agentmeter_runtime.lock.json`.
 
-Expected real task layout:
+Use `--prepare-only` to inspect the pinned source and applied patches before
+installation, or `--vendor-dir /path/to/dependencies` to choose the checkout
+location. Task discovery and launch logic live in
+[`agentmeter.runtime`](../../src/agentmeter/runtime/).
+
+Expected task layout:
 
 ```text
 tasks/<task-id>/
@@ -24,18 +29,16 @@ tasks/<task-id>/
   solution/
 ```
 
-Generate a manifest from Harbor-style tasks:
+Run a released instruction pair:
 
 ```bash
-python scripts/build_manifest_from_harbor_tasks.py \
-  --task-root "$AGENTMETER_TASK_ROOT" \
-  --suite core30 \
-  --out configs/manifests/core30.local.csv \
-  --eval-command 'harbor run -p {task_dir} -a oracle'
+agentmeter compare qwen36_codex original regex-log --dry-run
+agentmeter compare qwen36_codex original regex-log
+agentmeter compare qwen36_codex optimized regex-log
 ```
 
-Run a released task with `scripts/run_agentmeter_comparison.sh`, or a task list
-with `scripts/run_agentmeter_suite.sh`. The Final16 launcher retains evaluated
+Run a frozen list with `agentmeter suite configs/task_lists/core30.public.txt`
+after configuring an external task checkout. The comparison command retains evaluated
 instructions under `jobs/<run>/task_snapshots/` and saves Harbor results and
 trajectories beside them. `agentmeter_cli_adapters.patch` implements the four
 CLI execution adapters; `agentmeter_provider_routing.patch` carries custom

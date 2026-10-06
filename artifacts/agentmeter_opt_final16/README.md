@@ -29,7 +29,7 @@ records, the same inputs as the main-table AMS calculation.
 | [qwen36_kimi_cli / lru-cache-with-ttl](descriptions/qwen36_kimi_cli/lru-cache-with-ttl/) | 0.000 → 0.000 | 0.02877 → 0.01231 | -57.2% |
 | [qwen36_kimi_cli / markdown-table-generator](descriptions/qwen36_kimi_cli/markdown-table-generator/) | 0.000 → 0.000 | 0.01254 → 0.00958 | -23.6% |
 
-Recompute this table with `python scripts/reproduce_paper_tables.py --examples`.
+Recompute this table with `agentmeter tables --examples`.
 These are selected historical observations, not repeated-run estimates.
 Cost reductions at zero reward are not successful task completion; interpret
 reward and cost together. Complete-study comparisons use the full result grid.
@@ -84,8 +84,8 @@ that environment-file review.
 From the repository root, after configuring Harbor and provider credentials:
 
 ```bash
-bash scripts/run_agentmeter_comparison.sh qwen36_codex original regex-log
-bash scripts/run_agentmeter_comparison.sh qwen36_codex optimized regex-log
+agentmeter compare qwen36_codex original regex-log
+agentmeter compare qwen36_codex optimized regex-log
 ```
 
 The source argument selects the description; environment variables select
@@ -102,8 +102,8 @@ These are not results on this selected showcase alone. Per-example Self
 outcomes cannot be recovered from the aggregate Self CSV, but are available
 in the newly released [run-level scoring records](../scoring/README.md).
 
-Run `python scripts/reproduce_artifact_table.py` for descriptive summaries
-and `python scripts/reproduce_paper_tables.py` for AMS. Both now read the
+Run `agentmeter tables --descriptive` for descriptive summaries
+and `agentmeter tables` for AMS. Both read the
 same run-level USD inputs, without changing historical accounting.
 The CNY files in `results/` remain unchanged as legacy source tables; their
 `AgentMeterScore` field is not manuscript AMS. Full optimized-grid replay

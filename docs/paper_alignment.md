@@ -18,7 +18,7 @@ Budget inclusion uses <=; expensive failures use >. Strata receive equal
 weight, irrespective of their task counts.
 
 ```bash
-python scripts/compute_agentmeter_score.py --runs condition.csv
+agentmeter score --runs condition.csv
 ```
 
 Supply task_id,stratum,reward,cost_usd for one configuration/condition, with
@@ -34,7 +34,7 @@ the rounded supplementary-table transcription for comparison only.
 run-level inputs for 840 Core30 and 320 Final16 observations.
 
 ```bash
-python scripts/reproduce_paper_tables.py
+agentmeter tables
 ```
 
 This command reproduces all 28 Core30 table rows and the four targets'
@@ -43,22 +43,21 @@ each task-source is an observation in a complete balanced grid; apply budget
 and failure thresholds before aggregation, not to averaged costs. Pooled
 is not the mean of separately computed source AMS values, because EFR
 multiplies the quality term. See [data provenance](../artifacts/scoring/README.md).
-The legacy metrics in metrics/agentmeter.py and metrics/cost.py are not
-final-paper AMS.
+The implementation is [`agentmeter.metrics.paper`](../src/agentmeter/metrics/paper.py).
 
 ## Currency and archived scores
 
-Both reproduction scripts use archived `cost_usd` without repricing. The
+Both table views use archived `cost_usd` without repricing. The
 historical conversion is 1 / 6.7972 USD/CNY, approximately 0.1471. Legacy CSVs
 retain original CNY fields; manually using the rounded rate can change the
 last displayed decimal. This is historical accounting, not current pricing.
 
 self_summary.csv's AgentMeterScore is an archived legacy field, not the
-manuscript score; it must not be relabeled as AMS. The public table script
+manuscript score; it must not be relabeled as AMS. The table command
 omits it. For example, GLM Original totals USD 3.37084 in the archived
 run-level records, rounding to the paper's 3.371. Re-converting the legacy
 CNY aggregate at the rounded 0.1471 rate instead yields 3.370 at three
-decimals; the unified scripts avoid that second conversion.
+decimals; the unified table views avoid that second conversion.
 
 ## Conditions and counts
 

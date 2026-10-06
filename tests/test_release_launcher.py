@@ -1,74 +1,235 @@
+"""Exercise the Python runtime without invoking a model or Docker."""
+
+import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
+import pytest
+
+from agentmeter.runtime import RunOptions, plan_comparison, plan_suite, run_plan
+
 ROOT = Path(__file__).resolve().parents[1]
+OPTIONS = RunOptions("provider/model", "codex", "/bin/true", "0.153.0")
 
 
-def test_unreleased_description_fails_before_execution():
-    result = subprocess.run(
-        ['bash', str(ROOT / 'scripts/run_agentmeter_comparison.sh'),
-         'qwen36_codex', 'optimized', 'xlsx-recover-data'],
-        capture_output=True, text=True,
-    )
-    assert result.returncode == 3
-    assert 'not included in this example release' in result.stderr
+def cli_environment(**overrides):
+    return dict(os.environ, PYTHONPATH=str(ROOT / "src"), **overrides)
 
 
-def test_final16_preserves_snapshot_and_refuses_overwrite(tmp_path):
-    # /bin/true substitutes only for Harbor; no network or paid model call.
-    jobs = tmp_path / 'jobs with spaces'
-    env = dict(os.environ, AGENTMETER_MODEL='provider/model',
-               AGENTMETER_AGENT='codex', AGENTMETER_HARBOR_BIN='/bin/true',
-               AGENTMETER_JOBS_DIR=str(jobs), AGENTMETER_AGENT_VERSION='0.153.0')
-    cmd = ['bash', str(ROOT / 'scripts/run_agentmeter_comparison.sh'),
-           'qwen36_codex', 'optimized', 'regex-log']
-    subprocess.run(cmd, env=env, check=True, capture_output=True)
-    snapshot = jobs / 'task_snapshots/regex-log/instruction.md'
-    expected = ROOT / 'artifacts/agentmeter_opt_final16/descriptions/qwen36_codex/regex-log/optimized_instruction.md'
-    assert snapshot.read_bytes() == expected.read_bytes()
-    rerun = subprocess.run(cmd, env=env, capture_output=True)
-    assert rerun.returncode == 3
-    assert snapshot.read_bytes() == expected.read_bytes()
+def test_unreleased_description_fails_before_execution(tmp_path):
+    with pytest.raises(ValueError, match="not included in this example release"):
+        plan_comparison(
+            ROOT,
+            "qwen36_codex",
+            "optimized",
+            ["xlsx-recover-data"],
+            OPTIONS,
+            jobs_dir=tmp_path / "jobs",
+        )
+    assert not (tmp_path / "jobs").exists()
+
+
+def test_comparison_preserves_snapshot_and_refuses_overwrite(tmp_path, monkeypatch):
+    jobs = tmp_path / "jobs with spaces"
+    plan = plan_comparison(ROOT, "qwen36_codex", "optimized", ["regex-log"], OPTIONS, jobs_dir=jobs)
+    calls = []
+
+    def mock_harbor(command, *, check):
+        assert check
+        path = Path(command[command.index("-p") + 1])
+        assert (path / "instruction.md").read_bytes() == plan.tasks[0].instruction.read_bytes()
+        calls.append(command)
+
+    monkeypatch.setattr("agentmeter.runtime.experiments.subprocess.run", mock_harbor)
+    run_plan(plan)
+    assert calls == [
+        [
+            "/bin/true",
+            "run",
+            "-p",
+            str(jobs / "task_snapshots/regex-log"),
+            "-a",
+            "codex",
+            "-m",
+            "provider/model",
+            "--ak",
+            "version=0.153.0",
+            "-e",
+            "docker",
+            "-k",
+            "1",
+            "-n",
+            "1",
+            "--job-name",
+            "final16_regex-log_qwen36_codex_optimized",
+            "--jobs-dir",
+            str(jobs),
+        ]
+    ]
+    with pytest.raises(ValueError, match="snapshot already exists"):
+        run_plan(plan)
+    assert len(calls) == 1
 
 
 def test_default_conditions_use_same_released_tasks(tmp_path):
-    selected = []
-    for variant in ['original', 'optimized']:
-        jobs = tmp_path / variant
-        env = dict(os.environ, AGENTMETER_MODEL='test', AGENTMETER_AGENT='codex',
-                   AGENTMETER_HARBOR_BIN='/bin/true', AGENTMETER_JOBS_DIR=str(jobs))
-        subprocess.run(['bash', str(ROOT / 'scripts/run_agentmeter_comparison.sh'),
-                        'qwen36_codex', variant], env=env, check=True, capture_output=True)
-        selected.append({p.name for p in (jobs / 'task_snapshots').iterdir()})
-    expected = {p.name for p in (ROOT / 'artifacts/agentmeter_opt_final16/descriptions/qwen36_codex').iterdir() if p.is_dir()}
-    assert selected[0] == selected[1] == expected
+    plans = [
+        plan_comparison(ROOT, "qwen36_codex", variant, [], OPTIONS, jobs_dir=tmp_path / variant)
+        for variant in ("original", "optimized")
+    ]
+    selected = [{task.task_id for task in plan.tasks} for plan in plans]
+    descriptions = ROOT / "artifacts/agentmeter_opt_final16/descriptions/qwen36_codex"
+    assert selected[0] == selected[1] == {p.name for p in descriptions.iterdir() if p.is_dir()}
+    for task in plans[0].tasks:
+        assert task.instruction == task.source / "instruction.md"
+    assert not list(tmp_path.iterdir())
 
 
-def test_invalid_batch_creates_no_partial_run(tmp_path):
-    for tail in ['not-a-released-task', 'regex-log']:
-        jobs = tmp_path / tail
-        env = dict(os.environ, AGENTMETER_MODEL='test', AGENTMETER_AGENT='codex',
-                   AGENTMETER_HARBOR_BIN='/bin/true', AGENTMETER_JOBS_DIR=str(jobs))
-        result = subprocess.run(['bash', str(ROOT / 'scripts/run_agentmeter_comparison.sh'),
-                                 'qwen36_codex', 'original', 'regex-log', tail],
-                                env=env, capture_output=True)
-        assert result.returncode == 3
-        assert not jobs.exists()
+@pytest.mark.parametrize("tail", ["not-a-released-task", "regex-log", "../regex-log"])
+def test_invalid_batch_creates_no_partial_run(tmp_path, tail):
+    jobs = tmp_path / "jobs"
+    with pytest.raises(ValueError):
+        plan_comparison(
+            ROOT, "qwen36_codex", "original", ["regex-log", tail], OPTIONS, jobs_dir=jobs
+        )
+    assert not jobs.exists()
 
 
 def test_suite_preflight_and_final_line_without_newline(tmp_path):
-    task_list = tmp_path / 'tasks.txt'
-    jobs = tmp_path / 'jobs'
-    env = dict(os.environ, AGENTMETER_MODEL='test', AGENTMETER_AGENT='codex',
-               AGENTMETER_HARBOR_BIN='/bin/true', AGENTMETER_JOBS_DIR=str(jobs),
-               AGENTMETER_TASK_ROOT=str(ROOT / 'benchmark_tasks'))
-    command = ['bash', str(ROOT / 'scripts/run_agentmeter_suite.sh'), str(task_list)]
-    for content in ['regex-log\nmissing-task', 'regex-log\nregex-log', '']:
+    task_list, jobs = tmp_path / "tasks.txt", tmp_path / "jobs"
+    for content in ("regex-log\nmissing-task", "regex-log\nregex-log", ""):
         task_list.write_text(content)
-        result = subprocess.run(command, env=env, capture_output=True)
-        assert result.returncode == 3
+        with pytest.raises(ValueError):
+            plan_suite(ROOT, task_list, ROOT / "benchmark_tasks", OPTIONS, jobs_dir=jobs)
         assert not jobs.exists()
-    task_list.write_text('regex-log')
-    subprocess.run(command, env=env, check=True, capture_output=True)
+    task_list.write_text("# selected tasks\r\n\r\nregex-log")
+    plan = plan_suite(ROOT, task_list, ROOT / "benchmark_tasks", OPTIONS, jobs_dir=jobs)
+    run_plan(plan)
     assert jobs.is_dir()
+    assert plan.tasks[0].execution_path == ROOT / "benchmark_tasks/terminal_bench/regex-log"
+
+
+def test_suite_rejects_ambiguous_task(tmp_path):
+    for family in ("one", "two"):
+        task = tmp_path / family / "same-task"
+        task.mkdir(parents=True)
+        (task / "instruction.md").write_text("test")
+    task_list = tmp_path / "tasks.txt"
+    task_list.write_text("same-task")
+    with pytest.raises(ValueError, match="found 2"):
+        plan_suite(ROOT, task_list, tmp_path, OPTIONS)
+
+
+def test_existing_suite_job_is_never_overwritten(tmp_path):
+    task_list, jobs = tmp_path / "tasks.txt", tmp_path / "jobs"
+    task_list.write_text("regex-log")
+    plan = plan_suite(ROOT, task_list, ROOT / "benchmark_tasks", OPTIONS, jobs_dir=jobs)
+    existing = jobs / plan.tasks[0].job_name
+    existing.mkdir(parents=True)
+    (existing / "result.json").write_text('{"prior_run": true}')
+    with pytest.raises(ValueError, match="job already exists"):
+        run_plan(plan)
+    with pytest.raises(ValueError, match="job already exists"):
+        plan_suite(ROOT, task_list, ROOT / "benchmark_tasks", OPTIONS, jobs_dir=jobs)
+    assert (existing / "result.json").read_text() == '{"prior_run": true}'
+
+
+def test_incomplete_comparison_environment_fails_before_any_snapshot(tmp_path):
+    task = tmp_path / "benchmark_tasks/terminal_bench/incomplete"
+    task.mkdir(parents=True)
+    (task / "instruction.md").write_text("task")
+    (task / "task.toml").write_text("version = '1.0'")
+    with pytest.raises(ValueError, match="Incomplete task"):
+        plan_comparison(tmp_path, "qwen36_codex", "original", ["incomplete"], OPTIONS)
+    assert not (tmp_path / "jobs").exists()
+
+
+def test_environment_settings_are_overridable_without_recording_credentials():
+    settings = RunOptions.from_environment(
+        model="explicit",
+        environment={
+            "AGENTMETER_MODEL": "fallback",
+            "AGENTMETER_AGENT": "codex",
+            "AGENTMETER_HARBOR_BIN": "/bin/true",
+            "AGENTMETER_AGENT_VERSION": "0.153.0",
+            "OPENAI_API_KEY": "test-provider-key",
+        },
+    )
+    assert settings == RunOptions("explicit", "codex", "/bin/true", "0.153.0")
+    assert "test-provider-key" not in repr(settings)
+
+
+def test_cli_dry_run_does_not_create_jobs_or_require_harbor(tmp_path):
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "agentmeter",
+            "compare",
+            "qwen36_codex",
+            "optimized",
+            "regex-log",
+            "--model",
+            "model",
+            "--agent",
+            "codex",
+            "--jobs-dir",
+            str(tmp_path / "jobs"),
+            "--harbor",
+            "/definitely/uninstalled/harbor",
+            "--dry-run",
+        ],
+        capture_output=True,
+        text=True,
+        env=cli_environment(),
+    )
+    assert result.returncode == 0, result.stderr
+    assert "--job-name final16_regex-log_qwen36_codex_optimized" in result.stdout
+    assert "optimized_instruction.md" in result.stdout
+    assert not (tmp_path / "jobs").exists()
+
+
+def test_cli_forwards_provider_environment_to_mock_harbor(tmp_path):
+    mock_harbor = tmp_path / "mock-harbor"
+    capture = tmp_path / "capture.json"
+    mock_harbor.write_text(
+        f"#!{sys.executable}\n"
+        "import json, os, pathlib, sys\n"
+        "pathlib.Path(os.environ['MOCK_CAPTURE']).write_text(json.dumps({"
+        "'args': sys.argv[1:], 'key_present': os.environ.get('OPENAI_API_KEY') == 'fixture-key',"
+        "'base_url': os.environ.get('OPENAI_BASE_URL')}))\n"
+    )
+    mock_harbor.chmod(0o700)
+    env = cli_environment(
+        OPENAI_API_KEY="fixture-key",
+        OPENAI_BASE_URL="http://fixture.invalid/v1",
+        MOCK_CAPTURE=str(capture),
+    )
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "agentmeter",
+            "compare",
+            "qwen36_codex",
+            "original",
+            "regex-log",
+            "--model",
+            "test-model",
+            "--agent",
+            "codex",
+            "--jobs-dir",
+            str(tmp_path / "jobs"),
+            "--harbor",
+            str(mock_harbor),
+        ],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(capture.read_text())
+    assert payload["key_present"] and payload["base_url"] == "http://fixture.invalid/v1"
+    assert payload["args"][0] == "run"
+    assert "fixture-key" not in result.stdout + result.stderr

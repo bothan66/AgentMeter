@@ -1,46 +1,56 @@
 # Architecture
 
-The release bundles selected benchmark tasks and a modified CLIProxyAPI source
-snapshot. Harbor is installed from its pinned upstream revision plus patches.
+AgentMeter is an installable Python package with one entry point:
+`agentmeter` (or `python -m agentmeter`). Research artifacts and execution
+dependencies remain explicit inputs to that package.
 
-## SkillsBench and Harbor
+| Package | Responsibility |
+|:--|:--|
+| `agentmeter.metrics` | Manuscript AMS from task reward, archived cost and shared calibration |
+| `agentmeter.reporting` | Validate the released observation grid and reproduce paper tables |
+| `agentmeter.optimization` | Extract trajectory evidence, construct descriptions, check preservation and summarize candidates |
+| `agentmeter.runtime` | Prepare pinned Harbor and run matched instruction conditions or task lists |
+| `agentmeter.providers` | Probe Responses endpoints and render private CLIProxyAPI routes |
+| `agentmeter.tasks` | Discover task directories and build manifests for explicit custom verifiers |
+| `agentmeter.harness` | Optional remote-runner transport, usage normalization and artifact recording |
 
-SkillsBench owns task definitions: `instruction.md`, `task.toml`, Docker
-environment, skills, tests, verifier, solution, and public input data. Harbor
-owns task execution. AgentMeter receives only task paths and run artifacts.
+## Description construction
 
-The AgentMeter adapters in `integrations/skillsbench` discover valid task
-layouts and build manifests. `run_agentmeter_comparison.sh` and
-`run_agentmeter_suite.sh` execute paired examples or frozen task lists through
-Harbor. `integrations/harbor` contains AgentMeter's CLI-adapter and provider-
-routing patches plus task/evaluation helpers.
+The optimizer separates evidence extraction, feedback, optimization policy,
+provider setup, execution and preservation checks into individual modules.
+The public task instruction and source trajectory are inputs to candidate
+construction. The original environment and verifier remain fixed. Candidate
+selection uses source-pair reward first and cost second; the selected text
+is then frozen for Self/Cross evaluation.
 
-## AgentMeter and AgentMeter-Opt
+The released instruction pairs and result records are in `artifacts/`.
+[`docs/optimization.md`](optimization.md) gives the generation command and
+describes candidate outputs.
 
-AgentMeter normalizes trajectories from different harnesses into common route
-features: turns, token usage, tool calls, repeated reads, repair loops, output
-events, and reward. AgentMeter-Opt uses those observations as feedback for a language
-model that proposes a revised public task description.
+## Task execution
 
-The safety gate rejects checker leakage, hidden-test references, solver hints,
-new implementation constraints, changed file contracts, and unsupported task
-semantics. Validation copies the task and replaces only `instruction.md`.
+SkillsBench-style tasks contain `instruction.md`, `task.toml`, an environment
+and a verifier. The 16 released task bundles are in `benchmark_tasks/`;
+larger task checkouts are supplied through `AGENTMETER_TASK_ROOT`.
 
-## Model and harness routing
+Harbor owns container execution and records verifier reward and trajectories.
+AgentMeter's runtime prepares the pinned Harbor revision and compatibility
+patches, checks task selection, preserves instruction snapshots and launches
+the chosen model–harness pair. The patches and lock file live in
+`integrations/harbor/` and `integrations/agentmeter_runtime.lock.json`.
 
-The experiment matrix treats model and harness as separate variables. Runner
-configuration maps a `(model, harness)` pair to one of three wire formats:
-OpenAI Responses, OpenAI Chat Completions, or Anthropic Messages.
+## Provider routing
 
-For production, CLIProxyAPI can expose these formats at a single local address.
-The modified proxy source, configuration renderer and build instructions are
-included in `integrations/cliproxyapi/`, under its upstream MIT license.
+Model and harness are separate experiment variables. A harness can connect
+directly to a compatible provider or use the bundled modified CLIProxyAPI
+snapshot for Responses, Chat Completions and Messages conversion. Its Go
+source, license and checksum manifest are kept under `integrations/cliproxyapi/`.
+Python runtime setup and scoring do not require building this optional proxy.
 
-## Code and tests
+## Installed code and research artifacts
 
-`src/agentmeter/metrics/paper.py` implements manuscript AMS.
-`agentmeter_opt/` implements trajectory-guided candidate construction and
-preservation checks; its shared execution helpers live in
-`scripts/agentmeter_harness.py`. Archived results and task descriptions live in
-`artifacts/`. Simulation data is isolated in `tests/fixtures/`; production
-runner discovery reads local configuration files only.
+The wheel includes the Python implementation. Commands that consume task
+bundles, result tables or Harbor patches locate the research checkout from
+the current directory or `AGENTMETER_REPO_ROOT`. Credentials come from the
+environment; generated jobs, private configurations and caches stay outside
+the tracked source. Tests cover both the package and the released artifacts.

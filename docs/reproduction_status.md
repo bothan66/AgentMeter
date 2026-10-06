@@ -1,140 +1,112 @@
 # Reproduction guide
 
-| Workflow | Entry point | Inputs |
+Install from the cloned repository with `python -m pip install -e .`.
+The `agentmeter` command and `python -m agentmeter` expose the same interface.
+
+| Workflow | Command | Inputs |
 |:--|:--|:--|
-| Recompute main-table AMS | `scripts/reproduce_paper_tables.py` | Included 1,160 run records, frozen strata and full-precision calibration |
-| Inspect archived results | `scripts/reproduce_artifact_table.py` | Included Self/Cross CSVs |
-| Score task-level results | `scripts/compute_agentmeter_score.py` | One-condition CSV with task ID, effort stratum, reward and USD cost |
-| Replay an example | `scripts/run_agentmeter_comparison.sh` | Selected source, target configuration and provider credentials |
-| Run Core30 / Full80 | `scripts/run_agentmeter_suite.sh` | Frozen task list and matching task checkout |
-| Generate a rewrite | `agentmeter_opt/optimize_instruction.py` | Original task, source trajectory and reflection API |
+| Recompute manuscript tables | `agentmeter tables` | Included 1,160 records and full-precision calibration |
+| Inspect reward/cost summaries | `agentmeter tables --descriptive` | The same archived observations |
+| Inspect the 16 released pairs | `agentmeter tables --examples` | Released descriptions and their archived results |
+| Score one condition | `agentmeter score --runs condition.csv` | Task ID, frozen stratum, reward and USD cost |
+| Prepare pinned Harbor | `agentmeter setup` | Git, Python 3.12–3.13 and network access |
+| Replay a paired example | `agentmeter compare SOURCE CONDITION TASK` | Harbor, Docker and provider credentials |
+| Run a frozen task list | `agentmeter suite TASK_LIST` | Matching task checkout and target configuration |
+| Construct a description | `agentmeter optimize --help` | Source task, trajectory and reflection API |
 
-The release includes 16 executable task bundles and 16 selected rewritten
-descriptions. Each source configuration contributes four examples.
-Full-study Self aggregates and 192 Cross records are also included.
+The release contains 16 executable tasks and four selected descriptions per
+source configuration. Archived scoring covers all 840 Core30 and 320 Final16
+observations, including the 192 Cross outcomes.
 
-## Scoring and accounting
+## Recompute archived results
 
-Public tables use the same archived `cost_usd` values; historical conversion
-uses 1 / 6.7972 USD/CNY (approximately 0.1471). Legacy CSVs retain CNY.
-Use the manuscript scorer in
-`metrics/paper.py` for AMS; the historical `AgentMeterScore` CSV field and
-legacy diagnostic functions are not the final manuscript metric.
+```bash
+agentmeter tables
+agentmeter tables --descriptive
+agentmeter tables --examples
+```
 
-The main-table reproduction uses archived USD costs without reconverting
-them, frozen effort labels, and full-precision calibration. It matches the
-28 Core30 rows and four-target Original/Pooled/Cross AMS at published
-precision. The descriptive-summary command now uses the same run-level
-USD inputs. See [scoring data](../artifacts/scoring/README.md) and
+These commands use archived `cost_usd` and full-precision calibration without
+repricing. The main table reproduces all 28 Core30 rows and the four targets'
+Original/Pooled/Cross AMS at manuscript precision. The historical
+`AgentMeterScore` field in legacy CSVs is distinct from manuscript AMS.
+See [scoring inputs](../artifacts/scoring/README.md) and
 [condition definitions](paper_alignment.md).
 
-## Runtime setup
+## Replay Original and optimized instructions
 
-Follow [execution dependencies](external_dependencies.md) to install the
-pinned Harbor version and both patches. Export the provider API key and base
-URL before running. Keep task outputs and temporary files on a disk with
-adequate space; Docker layer storage is configured separately.
+Follow [execution setup](external_dependencies.md) to prepare Harbor and
+configure the target model and harness. Preview selection and launch:
 
-The `opt` installation extra pins GEPA 0.1.1 and LiteLLM 1.91.0 for this
-release; use Python 3.11–3.13 for this extra. Harbor is pinned separately in
-the execution setup. Use a repository
-commit ID when recording a reproduction, alongside the provider model ID,
-CLI version, task snapshot, pricing rules and calibration file.
+```bash
+agentmeter compare qwen36_codex original regex-log --dry-run
+agentmeter compare qwen36_codex original regex-log
+agentmeter compare qwen36_codex optimized regex-log
+```
 
-The real API self-check passed with GLM-5.3-Flash through CLIProxyAPI on
-2026-09-14: HTTP 200, completed response with output text, 17 input and 85
-output tokens. Run `python scripts/probe_responses.py` with provider variables
-exported to check your own endpoint.
-
-The `markdown-table-generator` Original smoke run also completed on
-2026-09-14 with GLM-5.3-Flash × Codex 0.153.0 through CLIProxyAPI.
-Harbor recorded no runtime exception and saved the trajectory, usage and
-verifier output. Total elapsed time was approximately 10 minutes 36 seconds,
-including about 4 minutes 10 seconds for CLI setup and 3 minutes 44 seconds
-for verification (mostly dependency downloads). Usage was 77,952 input tokens
-(including 1,024 cached) and 4,953 output tokens.
-
-The verifier passed 10/11 checks and assigned reward 0: its summary test
-expects `6,219,500`, whereas the generated report and agent's CSV-sum check
-give `6,419,800`. The bundled verifier remains unchanged. This run validates
-execution and result recording; it is not an additional paper result.
-
-`agentmeter_provider_routing.patch` configures the credential environment variable and
-preserves full custom-provider model IDs. The validated GLM route uses
-CLIProxyAPI for Responses-to-upstream conversion; the direct upstream route
-rejected the tested Responses inputs.
-
-The bundled `lru-cache-with-ttl` reference solution previously reached the
-verifier with 14/15 tests passing; `test_evict_all_expired_picks_oldest` failed.
-Use the original task unchanged when comparing historical results.
+The source pair selects the released instruction; `AGENTMETER_MODEL` and
+`AGENTMETER_AGENT` select the evaluation target. Omitting task IDs runs the
+same released source-specific subset for Original and optimized conditions.
+Each invocation creates a separate run directory. If setting
+`AGENTMETER_JOBS_DIR` explicitly, give each condition a new directory.
+Instruction snapshots, Harbor results, trajectories and verifier outputs
+remain together under that run directory.
 
 ## Run Core30 or Full80
 
-The exact task selections are frozen in:
-
-- [`configs/task_lists/core30.public.txt`](../configs/task_lists/core30.public.txt)
-- [`configs/task_lists/full80.txt`](../configs/task_lists/full80.txt)
-
-Point `AGENTMETER_TASK_ROOT` to an upstream SkillsBench-compatible task checkout
-and execute one target pair over either frozen task list:
+The frozen selections are
+[`core30.public.txt`](../configs/task_lists/core30.public.txt) and
+[`full80.txt`](../configs/task_lists/full80.txt). Supply a separate compatible
+task checkout containing every selected ID:
 
 ```bash
-export AGENTMETER_TASK_ROOT=/path/to/skillsbench
-
-bash scripts/run_agentmeter_suite.sh configs/task_lists/core30.public.txt
-# or
-bash scripts/run_agentmeter_suite.sh configs/task_lists/full80.txt
+export AGENTMETER_TASK_ROOT=/path/to/skillsbench/tasks
+agentmeter suite configs/task_lists/core30.public.txt --dry-run
+agentmeter suite configs/task_lists/core30.public.txt
+# Or select the full benchmark:
+agentmeter suite configs/task_lists/full80.txt
 ```
 
-Repeat for each target configuration to generate new Harbor rewards and usage
-records. Compute the manuscript-defined score using
-`python scripts/compute_agentmeter_score.py --runs condition.csv`, with one row per
-task: `task_id,stratum,reward,cost_usd`. See [scoring protocol](paper_alignment.md)
-for frozen effort labels, full-precision calibration, and condition definitions.
+Repeat with each target configuration. Record task-level reward and billable
+USD cost, then run `agentmeter score --runs condition.csv` using the frozen
+strata from the study. The [scoring protocol](paper_alignment.md) defines the
+required fields and aggregation rules.
 
 ## Generate a new trajectory-guided description
 
-To regenerate a description from an Original trajectory rather than replaying
-a released one:
+Install `python -m pip install -e '.[opt]'`, then follow
+[AgentMeter-Opt](optimization.md). Construction consumes the Original task
+and its saved source trajectory. Evaluate proposed instructions with the
+unchanged task verifier before reward-first, cost-second selection and
+Self/Cross evaluation.
+
+## Reproduce from an installed wheel
+
+The installed package includes the CLI and optimization modules. Data-driven
+commands also need the research checkout; when running elsewhere, set:
 
 ```bash
-python -m pip install -e '.[opt]'
-python agentmeter_opt/optimize_instruction.py \
-  --task-id regex-log \
-  --task-root benchmark_tasks/terminal_bench \
-  --baseline-result /path/to/original/agent/trajectory.json \
-  --combo qwen36_codex \
-  --model 'Qwen3.6+' \
-  --cli codex \
-  --adaptation-mode combo_adapted \
-  --candidate-only \
-  --offline-until-accepted \
-  --max-metric-calls 5 \
-  --reflection-model openai/qwen3.7-max \
-  --out-dir generated_reports/example
+export AGENTMETER_REPO_ROOT=/path/to/AgentMeter
+python -m agentmeter tables
 ```
 
-The paper uses Qwen3.7-Max for construction. Set the reflection model's
-provider credentials and use its corresponding model identifier; the
-construction provider may differ from the evaluation provider. Replace
-`--baseline-result` with the saved Original trajectory from the preceding
-run. Run these commands from the repository root.
-
-This command generates a candidate only. Evaluate it with the unchanged task
-verifier before reward-first, cost-second selection, then freeze the selected
-description before Self or Cross evaluation. Review the automatic gate's
-decisions against the original requirements when selecting candidates.
+Use a repository commit ID when recording a reproduction, along with the
+provider model ID, CLI version, task snapshot, generation settings, timeouts,
+pricing and cache-accounting rules. Provider revisions and sampling can
+change new executions even when the archived result tables reproduce exactly.
 
 ## Validation
 
 ```bash
 python -m pip install -e '.[dev]'
+ruff check src/agentmeter tests
+ruff format --check src/agentmeter tests
 pytest -q
 python tests/check_public_release.py
 ```
 
-Local tests cover metric behavior, task/description consistency, launcher
-output handling and provider-response normalization.
-Candidate generation and task evaluation are separate steps: evaluate a
-candidate with the original verifier before source-side selection and freezing.
-[Description notes](description_notes.md) document example-specific interpretation.
+CI checks package installation outside the source directory, table
+reproduction, task/description consistency, execution preflight, preservation
+checks and provider usage normalization. Proxy protocol tests use a local
+fixture upstream. A live API probe (`agentmeter probe`) and Harbor task run
+exercise provider connectivity and container execution separately.

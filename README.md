@@ -114,7 +114,7 @@ Candidates are screened for task preservation, then selected on the source
 pair by reward first and cost second. Selected descriptions are frozen before
 cross-configuration evaluation. Task environments and verifiers remain fixed.
 
-[Optimizer](agentmeter_opt/) · [Construction and selection details](docs/description_notes.md)
+[Optimizer](src/agentmeter/optimization/) · [Construction and selection details](docs/optimization.md)
 
 ## Quick start
 
@@ -131,8 +131,8 @@ cd AgentMeter
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -e .
-python scripts/reproduce_paper_tables.py
-python scripts/reproduce_artifact_table.py
+agentmeter tables
+agentmeter tables --descriptive
 ```
 
 The first command recomputes all 28 Core30 rows and Final16
@@ -146,7 +146,7 @@ transfer summaries. No API or Docker is needed for this step.
 First install the pinned Harbor runtime and AgentMeter patches:
 
 ```bash
-bash scripts/setup_agentmeter_runtime.sh
+agentmeter setup
 ```
 
 The 16 executable paper examples are already included under `benchmark_tasks/`;
@@ -163,9 +163,9 @@ export OPENAI_BASE_URL=https://provider.example/v1
 export CODEX_FORCE_API_KEY=1
 export CODEX_WIRE_API=responses
 
-python scripts/probe_responses.py
-bash scripts/run_agentmeter_comparison.sh qwen36_codex original regex-log
-bash scripts/run_agentmeter_comparison.sh qwen36_codex optimized regex-log
+agentmeter probe
+agentmeter compare qwen36_codex original regex-log
+agentmeter compare qwen36_codex optimized regex-log
 ```
 
 Use your provider's identifier for Qwen3.6-Plus and a Responses endpoint
@@ -179,6 +179,9 @@ creates a separate directory under `jobs/`.
 Omitting task IDs runs the same released source-specific subset in both
 conditions, so Original and Self remain paired.
 
+Add `--dry-run` to inspect the selected tasks and Harbor commands before
+execution. Every command is also available through `python -m agentmeter`.
+
 | Trial output | What to inspect |
 |:--|:--|
 | `result.json` | Reward, input/output/cache tokens, timings and exceptions |
@@ -191,7 +194,7 @@ conditions, so Original and Self remain paired.
 | Goal | Instructions |
 |:--|:--|
 | Run Core30 / Full80 with a complete task checkout | [Benchmark execution](docs/reproduction_status.md#run-core30-or-full80) |
-| Construct a rewrite from an Original trajectory | [Trajectory-guided construction](docs/reproduction_status.md#generate-a-new-trajectory-guided-description) |
+| Construct a rewrite from an Original trajectory | [Trajectory-guided construction](docs/optimization.md) |
 | Compute AMS from task-level reward and USD cost | [Scoring inputs and calibration](docs/paper_alignment.md) |
 
 ## Description examples
@@ -230,6 +233,18 @@ for attribution and applicable terms.
 
 ## Repository guide
 
+AgentMeter's implementation is an installable Python package. The same CLI
+exposes scoring, execution and description optimization; core modules can
+also be imported from Python.
+
+| AgentMeter component | Implementation |
+|:--|:--|
+| Manuscript AMS | [`agentmeter.metrics`](src/agentmeter/metrics/) |
+| Trajectory evidence, candidate construction and preservation checks | [`agentmeter.optimization`](src/agentmeter/optimization/) |
+| Pinned Harbor setup and Original/Optimized execution | [`agentmeter.runtime`](src/agentmeter/runtime/) |
+| Archived table reproduction | [`agentmeter.reporting`](src/agentmeter/reporting/) |
+| Provider probes and private routing configuration | [`agentmeter.providers`](src/agentmeter/providers/) |
+
 | Resource | Location |
 |:--|:--|
 | Full80 and Core30 selections | [Task lists](configs/task_lists/) |
@@ -241,6 +256,10 @@ for attribution and applicable terms.
 | Modified CLIProxyAPI source and route setup | [Proxy integration](integrations/cliproxyapi/) |
 
 Runtime caches, credentials, and new trajectories are excluded from Git.
+CLIProxyAPI remains a separately attributed Go dependency under
+`integrations/`; the Python package contains AgentMeter's research code.
+See [architecture](docs/architecture.md) for module boundaries and
+[reproduction](docs/reproduction_status.md) for the full command reference.
 
 ## Citation
 

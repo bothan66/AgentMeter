@@ -1,6 +1,6 @@
 api_runners:
   default:
-    url: "mock://local"
+    url: "https://runner.example.invalid/run"
     method: POST
     payload:
       task_id: "{task_id}"

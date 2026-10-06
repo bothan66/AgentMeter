@@ -30,7 +30,7 @@ export AGENTMETER_PROXY_CLIENT_KEY=your-local-proxy-key
 export UPSTREAM_OPENAI_API_KEY=your-upstream-key
 export UPSTREAM_OPENAI_BASE_URL=https://your-provider.example/v1
 
-python integrations/cliproxyapi/render_config.py \
+agentmeter proxy-config \
   --host 0.0.0.0 --port 8317 \
   --model 'Qwen3.6+=YOUR_UPSTREAM_QWEN_MODEL_ID' \
   --output build/cliproxyapi/config.local.yaml
@@ -45,7 +45,7 @@ refuses to overwrite an existing config. YAML `${...}` placeholders are
 not assumed to expand automatically. Bind to a trusted interface reachable
 from the task containers; requests require the configured client key.
 Generated configs, `.env` files, OAuth data, logs, and compiled binaries are
-ignored by Git. Before committing, run `python scripts/check_no_secrets.py`;
+ignored by Git. Before committing, run `python tests/check_public_release.py`;
 the same high-confidence credential scan runs in CI.
 
 Repeat `--model CLIENT_ALIAS=UPSTREAM_ID` for additional models, for example
@@ -68,7 +68,7 @@ For the host-side API probe:
 export OPENAI_BASE_URL=http://127.0.0.1:8317/v1
 export OPENAI_API_KEY="$AGENTMETER_PROXY_CLIENT_KEY"
 export AGENTMETER_MODEL='Qwen3.6+'
-python scripts/probe_responses.py
+agentmeter probe
 ```
 
 Before running Harbor, replace the loopback host in `OPENAI_BASE_URL` with
@@ -82,7 +82,7 @@ export AGENTMETER_AGENT=codex
 export AGENTMETER_AGENT_VERSION=0.153.0
 export CODEX_FORCE_API_KEY=1
 export CODEX_WIRE_API=responses
-bash scripts/run_agentmeter_comparison.sh qwen36_codex original regex-log
+agentmeter compare qwen36_codex original regex-log
 ```
 
 The proxy exposes `/v1/responses`, `/v1/chat/completions`, and

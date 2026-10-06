@@ -12,8 +12,11 @@ license = {text = "MIT"}
 dependencies = ["PyYAML>=6"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "ruff>=0.9"]
 opt = ["gepa==0.1.1", "litellm==1.91.0"]
+
+[project.scripts]
+agentmeter = "agentmeter.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -21,4 +24,12 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 norecursedirs = ["fixtures"]
-pythonpath = [".", "src", "scripts"]
+pythonpath = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+include = ["src/agentmeter/**/*.py", "tests/*.py"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

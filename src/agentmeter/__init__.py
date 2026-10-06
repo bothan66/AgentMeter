@@ -1,3 +1,3 @@
 """Public AgentMeter toolkit."""
 
-__all__ = ["metrics", "trajectories"]
+__all__ = ["metrics", "optimization", "reporting", "runtime"]

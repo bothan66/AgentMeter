@@ -3,7 +3,7 @@
 Run from the repository root:
 
 ```bash
-python scripts/reproduce_paper_tables.py
+agentmeter tables
 ```
 
 This recomputes the 28-row Core30 results and the Final16 description-condition
@@ -30,7 +30,7 @@ in this data table. No new model executions were performed to create it.
   difficulty. Core30 has a balanced 10/10/10 assignment; Final16 uses its
   tasks' Full80 assignments. The same task may therefore have different
   strata across these two experiments.
-- `cost_usd` is the archived per-run USD cost. Both table scripts use it
+- `cost_usd` is the archived per-run USD cost. Both table views use it
   unchanged, without reconversion or repricing. Historical accounting uses
   `1 / 6.7972` USD/CNY where currency conversion applies.
 - `input_tokens` retains the archive's raw prompt counter. Some Claude

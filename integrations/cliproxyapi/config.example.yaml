@@ -1,4 +1,4 @@
-# Documentation template. render_config.py writes literal values from environment
+# Documentation template. agentmeter proxy-config writes values from environment
 # variables; do not assume CLIProxyAPI expands ${...} in YAML automatically.
 port: 8317
 host: "127.0.0.1"
