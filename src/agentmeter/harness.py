@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import difflib
 import json
+import math
 import os
 import shutil
 import subprocess
@@ -42,6 +43,33 @@ def read_yaml(path: str | Path) -> dict[str, Any]:
     if not isinstance(data, dict):
         raise ValueError(f"Expected a YAML mapping in {path}")
     return data
+
+
+def _first_recorded_number(*values: Any) -> float | None:
+    """Keep explicit zero values and distinguish missing observations from zero."""
+    for value in values:
+        if value is None or value == "":
+            continue
+        number = float(value)
+        if not math.isfinite(number):
+            raise ValueError("Recorded numeric observations must be finite")
+        return number
+    return None
+
+
+def reported_reward(data: dict[str, Any]) -> float | None:
+    """Read an explicit graded verifier outcome, never an API completion status."""
+    verifier = data.get("verifier_result") or {}
+    rewards = verifier.get("rewards") or {} if isinstance(verifier, dict) else {}
+    direct_rewards = data.get("rewards") or {}
+    reward = _first_recorded_number(
+        data.get("reward"),
+        rewards.get("reward") if isinstance(rewards, dict) else None,
+        direct_rewards.get("reward") if isinstance(direct_rewards, dict) else None,
+    )
+    if reward is not None and not 0 <= reward <= 1:
+        raise ValueError("Verifier reward must be between zero and one")
+    return reward
 
 
 def ensure_relative(path: str) -> str:
@@ -341,7 +369,10 @@ def normalize_api_response(data: dict[str, Any], cfg: ApiConfig) -> dict[str, An
         "cache_creation_tokens": cache_creation_tokens,
         "cache_hit_tokens": cache_hit_tokens,
         "total_tokens": total_tokens,
-        "total_cost_cny": float(usage.get("total_cost_cny") or usage.get("cost_cny") or 0.0),
+        "cost_usd": _first_recorded_number(usage.get("cost_usd"), usage.get("total_cost_usd")),
+        "total_cost_cny": _first_recorded_number(
+            usage.get("total_cost_cny"), usage.get("cost_cny")
+        ),
         "turns": int(data.get("turns") or 0),
         "tool_calls": int(data.get("tool_calls") or 0),
         "exit_code": 0 if passed else 1,
@@ -468,8 +499,19 @@ def evaluate(
         timeout=timeout_sec,
         check=False,
     )
+    # Verifiers may report a graded outcome as a JSON object on stdout. A
+    # conventional shell verifier without one retains its binary exit-code
+    # contract. The caller can use a runner's explicit graded reward when this
+    # local command reports successful completion without a structured grade.
+    try:
+        payload = json.loads(completed.stdout)
+    except (json.JSONDecodeError, TypeError):
+        payload = None
+    reward = reported_reward(payload) if isinstance(payload, dict) else None
     result = {
-        "passed": completed.returncode == 0,
+        "passed": reward >= 1.0 if reward is not None else completed.returncode == 0,
+        "reward": reward if reward is not None else float(completed.returncode == 0),
+        "reward_source": "verifier_stdout" if reward is not None else "verifier_exit_code",
         "exit_code": completed.returncode,
         "duration_sec": round(time.monotonic() - started, 3),
         "error": None if completed.returncode == 0 else "evaluation failed",
@@ -563,6 +605,14 @@ def run_attempt(
     )
     remote_summary = response.get("summary") if isinstance(response.get("summary"), dict) else {}
     usage = response.get("usage") if isinstance(response.get("usage"), dict) else {}
+    reward = eval_result["reward"]
+    reward_source = eval_result["reward_source"]
+    if reward_source == "verifier_exit_code" and eval_result["exit_code"] == 0:
+        remote_reward = reported_reward(remote_summary)
+        if remote_reward is None:
+            remote_reward = reported_reward(response)
+        if remote_reward is not None:
+            reward, reward_source = remote_reward, "runner_verifier_reward"
     summary = {
         "task_id": task.task_id,
         "suite": task.suite,
@@ -572,7 +622,9 @@ def run_attempt(
         "model": model,
         "cli": cli,
         "attempt": attempt,
-        "passed": bool(eval_result["passed"]),
+        "passed": reward >= 1.0,
+        "reward": reward,
+        "reward_source": reward_source,
         "total_tokens": int(remote_summary.get("total_tokens") or usage.get("total_tokens") or 0),
         "input_tokens": int(remote_summary.get("input_tokens") or usage.get("input_tokens") or 0),
         "output_tokens": int(
@@ -591,8 +643,17 @@ def run_attempt(
             or usage.get("cache_read_tokens")
             or 0
         ),
-        "total_cost_cny": float(
-            remote_summary.get("total_cost_cny") or usage.get("total_cost_cny") or 0.0
+        "cost_usd": _first_recorded_number(
+            remote_summary.get("cost_usd"),
+            remote_summary.get("total_cost_usd"),
+            usage.get("cost_usd"),
+            usage.get("total_cost_usd"),
+        ),
+        "total_cost_cny": _first_recorded_number(
+            remote_summary.get("total_cost_cny"),
+            remote_summary.get("cost_cny"),
+            usage.get("total_cost_cny"),
+            usage.get("cost_cny"),
         ),
         "turns": int(remote_summary.get("turns") or 0),
         "tool_calls": int(remote_summary.get("tool_calls") or 0),
@@ -618,6 +679,7 @@ def run_attempt(
             "cache_creation_tokens",
             "cache_hit_tokens",
             "total_tokens",
+            "cost_usd",
             "total_cost_cny",
         )
     }

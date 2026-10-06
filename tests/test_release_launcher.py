@@ -80,7 +80,11 @@ def test_default_conditions_use_same_released_tasks(tmp_path):
     ]
     selected = [{task.task_id for task in plan.tasks} for plan in plans]
     descriptions = ROOT / "artifacts/agentmeter_opt_final16/descriptions/qwen36_codex"
-    assert selected[0] == selected[1] == {p.name for p in descriptions.iterdir() if p.is_dir()}
+    assert (
+        selected[0]
+        == selected[1]
+        == {p.parent.name for p in descriptions.glob("*/optimized_instruction.md")}
+    )
     for task in plans[0].tasks:
         assert task.instruction == task.source / "instruction.md"
     assert not list(tmp_path.iterdir())

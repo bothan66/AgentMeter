@@ -19,6 +19,7 @@ for all four Final16 targets to manuscript display precision.
 | `diagnostics.csv` | Same 1,160 run keys; archived steps, tool calls and alternate cache-read counter |
 | `provenance.json` | Original archive filenames and SHA256 checksums, plus extraction policy |
 | [`paper_calibration_full_precision.json`](../../configs/paper_calibration_full_precision.json) | Frozen USD budget grids and expensive-failure thresholds |
+| [`paper_model_pricing.json`](../../configs/paper_model_pricing.json) | Unchanged model-rate snapshot from the study archive; not a current price list |
 
 Numeric strings are retained from the frozen archive. Private machine paths,
 exception text, credentials, trajectories, and task documents are not included
@@ -61,7 +62,7 @@ in this data table. No new model executions were performed to create it.
   not averages of source-level AMS. Threshold each observation before
   aggregating TQ, AUBQC and EFR within the frozen strata.
 
-The released 16 description examples remain a showcase subset. Scoring the
+The released 9 description examples remain a showcase subset. Scoring the
 complete archived grid does not require releasing all descriptions or traces;
 regenerating every execution does. This package does not reconstruct Generic,
 Adapted-1, or the complete Full80 experiment table.

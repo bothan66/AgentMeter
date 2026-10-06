@@ -26,5 +26,6 @@ dist/
 *.log
 *.zip
 *.pdf
+!/benchmark_tasks/skillsbench/sales-pivot-analysis/environment/population.pdf
 /proxy-auth/
 .DS_Store

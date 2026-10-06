@@ -7,8 +7,9 @@ import textwrap
 from pathlib import Path
 from typing import Any
 
-from agentmeter.harness import read_json
+from agentmeter.harness import read_json, reported_reward
 
+from .costs import comparable_costs, load_cost_summary
 from .evidence import build_trajectory_evidence
 from .text import compact, diff_summary
 
@@ -17,7 +18,7 @@ def load_baseline_result(path: Path | None, task_id: str, combo: str) -> dict[st
     """Read runner or Harbor outcomes using the original experiment's token conventions."""
     baseline = {
         "baseline_passed": False,
-        "baseline_reward": 0.0,
+        "baseline_reward": None,
         "baseline_tokens": 0,
         "baseline_tool_calls": 0,
         "baseline_turns": 0,
@@ -47,20 +48,14 @@ def load_baseline_result(path: Path | None, task_id: str, combo: str) -> dict[st
                 + int(final_metrics.get("total_cached_tokens") or 0)
             )
         )
-        verifier_reward = None
-        verifier_result = data.get("verifier_result")
-        if isinstance(verifier_result, dict):
-            rewards = verifier_result.get("rewards")
-            if isinstance(rewards, dict):
-                verifier_reward = rewards.get("reward")
-        reward_value = data.get("reward")
-        if reward_value is None and verifier_reward is not None:
-            reward_value = verifier_reward
+        reward_value = reported_reward(data)
         passed_value = data.get("passed")
-        if passed_value is None and reward_value is not None:
-            passed_value = float(reward_value) >= 1.0
-        baseline["baseline_passed"] = bool(passed_value)
-        baseline["baseline_reward"] = float(reward_value or (1.0 if passed_value else 0.0) or 0.0)
+        if reward_value is not None:
+            baseline["baseline_reward"] = reward_value
+            baseline["baseline_passed"] = reward_value >= 1.0
+        elif isinstance(passed_value, bool):
+            baseline["baseline_passed"] = passed_value
+            baseline["baseline_reward"] = 1.0 if passed_value else 0.0
         if total_tokens or not baseline["baseline_tokens"]:
             baseline["baseline_tokens"] = int(total_tokens or 0)
         tool_calls_value = data.get("tool_calls")
@@ -94,7 +89,11 @@ def load_baseline_result(path: Path | None, task_id: str, combo: str) -> dict[st
         reward_txt = trial_dir / "verifier" / "reward.txt"
         if reward_txt.exists():
             try:
-                reward_value = float(reward_txt.read_text(encoding="utf-8").strip())
+                reward_value = reported_reward(
+                    {"reward": reward_txt.read_text(encoding="utf-8").strip()}
+                )
+                if reward_value is None:
+                    return found
                 baseline["baseline_reward"] = reward_value
                 baseline["baseline_passed"] = reward_value >= 1.0
                 found = True
@@ -158,108 +157,6 @@ def trajectory_path_for_result(path: Path | None) -> Path | None:
     return candidate if candidate.exists() else None
 
 
-def load_cost_summary(path: Path | None) -> dict[str, Any]:
-    """Prefer archived costs; otherwise retain the experiment's historical cache pricing."""
-    trial_dir = trial_dir_for_result_path(path)
-    if not trial_dir:
-        return {"available": False}
-    cost_path = trial_dir / "cost.json"
-    if not cost_path.exists():
-        result_path = trial_dir / "result.json"
-        if result_path.exists():
-            try:
-                result = read_json(result_path)
-                agent_result = (
-                    result.get("agent_result")
-                    if isinstance(result.get("agent_result"), dict)
-                    else {}
-                )
-                input_total = int(agent_result.get("n_input_tokens") or 0)
-                cache_hit = int(agent_result.get("n_cache_tokens") or 0)
-                output = int(agent_result.get("n_output_tokens") or 0)
-                if input_total or cache_hit or output:
-                    input_pure = max(0, input_total - cache_hit)
-                    billable = (
-                        input_pure * 6 / 1_000_000
-                        + cache_hit * 1.2 / 1_000_000
-                        + output * 24 / 1_000_000
-                    )
-                    return {
-                        "available": True,
-                        "cost_path": str(cost_path),
-                        "cost_source": "result_json_agent_result_no_tier_cache_discount",
-                        "billable_cost_cny": billable,
-                        "input_pure_tokens": input_pure,
-                        "cache_creation_tokens": 0,
-                        "cache_hit_tokens": cache_hit,
-                        "output_tokens": output,
-                        "input_total_tokens": input_total,
-                    }
-            except Exception as exc:
-                return {
-                    "available": False,
-                    "cost_path": str(cost_path),
-                    "error": compact(str(exc), 300),
-                }
-        trajectory_path = trial_dir / "agent" / "trajectory.json"
-        if trajectory_path.exists():
-            try:
-                trajectory = read_json(trajectory_path)
-                final = (
-                    trajectory.get("final_metrics")
-                    if isinstance(trajectory.get("final_metrics"), dict)
-                    else {}
-                )
-                input_total = int(
-                    final.get("total_prompt_tokens") or final.get("total_input_tokens") or 0
-                )
-                cache_hit = int(final.get("total_cached_tokens") or 0)
-                output = int(
-                    final.get("total_completion_tokens") or final.get("total_output_tokens") or 0
-                )
-                if input_total or cache_hit or output:
-                    input_pure = max(0, input_total - cache_hit)
-                    billable = (
-                        input_pure * 6 / 1_000_000
-                        + cache_hit * 1.2 / 1_000_000
-                        + output * 24 / 1_000_000
-                    )
-                    return {
-                        "available": True,
-                        "cost_path": str(cost_path),
-                        "cost_source": "trajectory_final_metrics_no_tier_cache_discount",
-                        "billable_cost_cny": billable,
-                        "input_pure_tokens": input_pure,
-                        "cache_creation_tokens": 0,
-                        "cache_hit_tokens": cache_hit,
-                        "output_tokens": output,
-                        "input_total_tokens": input_total,
-                    }
-            except Exception as exc:
-                return {
-                    "available": False,
-                    "cost_path": str(cost_path),
-                    "error": compact(str(exc), 300),
-                }
-        return {"available": False, "cost_path": str(cost_path)}
-    try:
-        data = read_json(cost_path)
-    except Exception as exc:
-        return {"available": False, "cost_path": str(cost_path), "error": compact(str(exc), 300)}
-    tokens = data.get("tokens") if isinstance(data.get("tokens"), dict) else {}
-    cost = data.get("cost_cny") if isinstance(data.get("cost_cny"), dict) else {}
-    return {
-        "available": True,
-        "cost_path": str(cost_path),
-        "billable_cost_cny": cost.get("total"),
-        "input_pure_tokens": tokens.get("input_pure"),
-        "cache_creation_tokens": tokens.get("cache_creation"),
-        "cache_hit_tokens": tokens.get("cache_hit") or tokens.get("cache_hit_observed"),
-        "output_tokens": tokens.get("output"),
-        "input_total_tokens": tokens.get("input_total"),
-    }
-
-
 def _optional_float(value: Any) -> float | None:
     try:
         if value in (None, ""):
@@ -307,8 +204,9 @@ def build_round_feedback(
         )
     baseline_reward = _optional_float(baseline.get("baseline_reward"))
     previous_reward = _optional_float(previous.get("baseline_reward"))
-    baseline_bill = _optional_float(baseline_cost.get("billable_cost_cny"))
-    previous_bill = _optional_float(previous_cost.get("billable_cost_cny"))
+    baseline_bill, previous_bill, comparison_currency = comparable_costs(
+        baseline_cost, previous_cost
+    )
     reward_delta = (
         None
         if baseline_reward is None or previous_reward is None
@@ -369,11 +267,28 @@ def build_round_feedback(
         guidance = [
             "The previous rewrite improved reward. Prefer keeping it or lightly compacting without changing semantics."
         ]
-    elif cost_delta_pct is not None and cost_delta_pct < -1e-9:
+    elif (
+        reward_delta is not None
+        and abs(reward_delta) <= 1e-9
+        and cost_delta_pct is not None
+        and cost_delta_pct < -1e-9
+    ):
         failure_type = "reward_same_cost_down"
         objective = "stop_or_light_compact"
         guidance = [
             "The previous rewrite already reduced cost without reward loss. A further round should be minimal or no-op."
+        ]
+    elif reward_delta is None:
+        failure_type = "missing_verified_reward"
+        objective = "collect_verified_outcome"
+        guidance = [
+            "A verified baseline or previous-run reward is missing. Do not treat the missing outcome as zero reward or claim reward preservation."
+        ]
+    elif comparison_currency is None:
+        failure_type = "missing_comparable_cost"
+        objective = "collect_recorded_cost"
+        guidance = [
+            "Reward is unchanged, but recorded costs in a shared currency are missing. Keep cost improvement unknown; do not estimate it from token totals."
         ]
     else:
         failure_type = "no_measurable_gain"
@@ -392,8 +307,13 @@ def build_round_feedback(
         "baseline_reward": baseline_reward,
         "previous_reward": previous_reward,
         "reward_delta_vs_baseline": reward_delta,
-        "baseline_billable_cost_cny": baseline_bill,
-        "previous_billable_cost_cny": previous_bill,
+        "baseline_billable_cost_cny": baseline_cost.get("billable_cost_cny"),
+        "previous_billable_cost_cny": previous_cost.get("billable_cost_cny"),
+        "baseline_billable_cost_usd": baseline_cost.get("billable_cost_usd"),
+        "previous_billable_cost_usd": previous_cost.get("billable_cost_usd"),
+        "baseline_comparison_cost": baseline_bill,
+        "previous_comparison_cost": previous_bill,
+        "cost_comparison_currency": comparison_currency,
         "cost_delta_pct_vs_baseline": cost_delta_pct,
         "baseline_cost_summary": baseline_cost,
         "previous_cost_summary": previous_cost,
@@ -416,7 +336,7 @@ def round_objective_suffix(round_feedback: dict[str, Any]) -> str:
     The previous accepted rewrite has already been rerun. Use the previous rerun result as feedback, not as a hidden answer source.
     Observed previous-round failure type: {round_feedback.get("failure_type")}.
     Baseline reward: {round_feedback.get("baseline_reward")}; previous rewrite reward: {round_feedback.get("previous_reward")}; reward delta: {round_feedback.get("reward_delta_vs_baseline")}.
-    Baseline billable cost CNY: {round_feedback.get("baseline_billable_cost_cny")}; previous rewrite billable cost CNY: {round_feedback.get("previous_billable_cost_cny")}; cost delta pct: {round_feedback.get("cost_delta_pct_vs_baseline")}.
+    Recorded costs in a shared currency ({round_feedback.get("cost_comparison_currency") or "unavailable"}): baseline {round_feedback.get("baseline_comparison_cost")}; previous rewrite {round_feedback.get("previous_comparison_cost")}; cost delta pct: {round_feedback.get("cost_delta_pct_vs_baseline")}.
 
     Current round guidance:
     {guidance}

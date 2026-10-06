@@ -176,7 +176,9 @@ def plan_comparison(
         raise ValueError("Variant must be original or optimized")
     descriptions = repo / "artifacts/agentmeter_opt_final16/descriptions" / source_pair
     selected = tuple(task_ids) or tuple(
-        sorted(p.name for p in descriptions.iterdir() if p.is_dir())
+        sorted(
+            p.parent.name for p in descriptions.glob("*/optimized_instruction.md") if p.is_file()
+        )
     )
     selected = _validated_ids(selected)
     jobs = _jobs_path(repo, f"final16_{source_pair}_{variant}", options, jobs_dir)

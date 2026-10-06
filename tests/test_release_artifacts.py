@@ -1,9 +1,46 @@
 """Check that released selections and description combinations are executable inputs."""
 
 import csv
+import shlex
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_dockerfile_local_inputs_are_included():
+    """Catch inputs present locally but omitted from a fresh Git checkout."""
+    released = None
+    if (ROOT / ".git").exists():
+        names = (
+            subprocess.check_output(
+                ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+                cwd=ROOT,
+            )
+            .decode()
+            .split("\0")
+        )
+        released = {ROOT / name for name in names if name}
+    for dockerfile in (ROOT / "benchmark_tasks").glob("*/*/environment/Dockerfile"):
+        for line in dockerfile.read_text().splitlines():
+            if not line.split() or line.split()[0].upper() not in {"COPY", "ADD"}:
+                continue
+            parts = shlex.split(line, comments=True)
+            if any(part.startswith("--from=") for part in parts):
+                continue
+            sources = [part for part in parts[1:-1] if not part.startswith("--")]
+            for source in sources:
+                if source.startswith(("https://", "http://")):
+                    continue
+                matches = list(dockerfile.parent.glob(source))
+                assert matches, (dockerfile, source)
+                for path in matches:
+                    assert path.exists(), (dockerfile, source)
+                    if released is not None:
+                        if path.is_file():
+                            assert path in released, f"Unreleased Docker input: {path}"
+                        else:
+                            assert any(path in item.parents for item in released), path
 
 
 def test_frozen_selections_and_descriptions():
@@ -29,11 +66,17 @@ def test_frozen_selections_and_descriptions():
             "*/*/optimized_instruction.md"
         )
     )
-    assert len(descriptions) == 16
-    assert len({p.parent.name for p in descriptions}) == 13
-    assert len({p.parent.parent.name for p in descriptions}) == 4
-    for source in {p.parent.parent.name for p in descriptions}:
-        assert sum(p.parent.parent.name == source for p in descriptions) == 4
+    expected = {
+        "qwen36_codex": {"regex-log", "citation-check", "sales-pivot-analysis"},
+        "qwen36_kimi_cli": {"dm-csv-011"},
+        "deepseek_v4_kimi_cli": {"dm-csv-009", "pddl-tpp-planning", "virtualhome-agent-planning"},
+        "glm51_qwen_coder": {"dm-csv-009", "bash-script-debugger"},
+    }
+    assert {(p.parent.parent.name, p.parent.name) for p in descriptions} == {
+        (source, task) for source, tasks in expected.items() for task in tasks
+    }
+    assert len(descriptions) == 9
+    assert len({p.parent.name for p in descriptions}) == 8
     for optimized in descriptions:
         (task_dir,) = (ROOT / "benchmark_tasks").glob(f"*/{optimized.parent.name}")
         assert (

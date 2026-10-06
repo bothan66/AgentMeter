@@ -131,7 +131,7 @@ def example_table(rows, repository=None):
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="agentmeter tables", description=__doc__)
     parser.add_argument(
-        "--examples", action="store_true", help="Print all 16 released Original/Self example pairs"
+        "--examples", action="store_true", help="Print the released Original/Self example pairs"
     )
     parser.add_argument("--repository", type=Path, help="AgentMeter research checkout")
     parser.add_argument(

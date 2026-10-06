@@ -11,8 +11,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from agentmeter.harness import read_json, write_json
+from agentmeter.harness import read_json, reported_reward, write_json
 
+from .costs import cost_summary_from_mapping, load_cost_summary
 from .evidence import build_public_only_evidence, build_trajectory_evidence
 from .execution import run_agent_task
 from .feedback import build_round_feedback, load_baseline_result, round_objective_suffix
@@ -34,6 +35,7 @@ from .providers import (
     parse_combo,
     runner_has_route,
 )
+from .selection import CandidateOutcome, retain_candidate
 from .text import compact, diff_summary, ensure_empty_dir, safe_name, write_text
 
 
@@ -55,7 +57,9 @@ def _parse_arguments(argv: list[str] | None) -> argparse.Namespace:
         type=Path,
         help="Optional previous accepted rewritten instruction to use as GEPA seed. Safety is still checked against the original task instruction.",
     )
-    parser.add_argument("--baseline-result", type=Path)
+    parser.add_argument(
+        "--baseline-result", type=Path, help="Observed outcome of the original task instruction."
+    )
     parser.add_argument(
         "--previous-result",
         type=Path,
@@ -143,6 +147,15 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit(f"seed instruction not found: {seed_instruction_path}")
     seed_instruction = seed_instruction_path.read_text(encoding="utf-8")
     baseline = load_baseline_result(args.baseline_result, args.task_id, args.combo)
+    baseline_cost = load_cost_summary(args.baseline_result)
+    original_outcome = CandidateOutcome(
+        candidate_id="original",
+        instruction=original_instruction,
+        reward=baseline["baseline_reward"],
+        passed=baseline["baseline_passed"] if baseline["baseline_reward"] is not None else None,
+        cost_usd=baseline_cost["billable_cost_usd"],
+        cost_cny=baseline_cost["billable_cost_cny"],
+    )
     if args.adaptation_mode == "generic_no_trajectory":
         baseline["trajectory_evidence"] = build_public_only_evidence(original_instruction)
     else:
@@ -180,8 +193,7 @@ def main(argv: list[str] | None = None) -> None:
         "task_dir": str(task_dir),
         "original_instruction_path": str(original_instruction_path),
         "seed_instruction_path": str(seed_instruction_path),
-        "seed_differs_from_original": " ".join(seed_instruction.split())
-        != " ".join(original_instruction.split()),
+        "seed_differs_from_original": seed_instruction != original_instruction,
         "baseline_result": str(args.baseline_result) if args.baseline_result else "",
         "feedback_result_path": str(args.baseline_result) if args.baseline_result else "",
         "previous_result_path": str(args.previous_result) if args.previous_result else "",
@@ -251,11 +263,14 @@ def main(argv: list[str] | None = None) -> None:
     evaluation_counts = _EvaluationCounts()
     history: list[dict[str, Any]] = []
     candidate_cache: dict[str, dict[str, Any]] = {}
+    measured_candidates: list[CandidateOutcome] = []
     rejection_feedback_memory: list[dict[str, Any]] = []
 
     def evaluator(candidate: str) -> float:
         evaluation_counts.metric_calls += 1
-        candidate_key = " ".join(candidate.split())
+        # Reuse a measurement only for exactly the same instruction. Collapsing
+        # whitespace could conflate distinct code blocks or Markdown structure.
+        candidate_key = candidate
         call_dir = result_dir / "metric_calls" / f"metric_call_{evaluation_counts.metric_calls:03d}"
         call_dir.mkdir(parents=True, exist_ok=True)
         write_text(call_dir / "rewritten_instruction.md", candidate)
@@ -313,7 +328,7 @@ def main(argv: list[str] | None = None) -> None:
                 "meaning": (
                     "No trajectory/result feedback is used in this mode; optimization is based only on the original public instruction and the task-preservation safety gate."
                     if not adaptation_policy.get("uses_trajectory_feedback", True)
-                    else "Use this trajectory/result as feedback for the current seed candidate. In multi-round refinement this should be the rerun result of the previous accepted instruction."
+                    else "Use the original instruction's trajectory/result as the fixed baseline. Supply a previous accepted rewrite's result separately through --previous-result for multi-round feedback."
                 ),
             },
         }
@@ -400,11 +415,7 @@ def main(argv: list[str] | None = None) -> None:
                 score = 0.25 if baseline["baseline_passed"] else 0.0
                 score_reason = "no_op_low_score_candidate_only"
             else:
-                score = (
-                    0.35
-                    if should_explore_efficiency
-                    else (1.0 if baseline["baseline_passed"] else 0.0)
-                )
+                score = 0.35 if should_explore_efficiency else (original_outcome.reward or 0.0)
                 score_reason = (
                     "baseline_passed_but_efficiency_friction_explore_rewrite"
                     if should_explore_efficiency
@@ -412,14 +423,15 @@ def main(argv: list[str] | None = None) -> None:
                 )
             side_info.update(
                 {
-                    "passed": bool(baseline["baseline_passed"]),
-                    "reward": float(baseline["baseline_reward"] or 0.0),
+                    "passed": original_outcome.passed,
+                    "reward": original_outcome.reward,
+                    "cost_summary": baseline_cost,
                     "tokens": int(baseline["baseline_tokens"] or 0),
                     "tool_calls": int(baseline["baseline_tool_calls"] or 0),
                     "token_efficiency_bonus": 0.0,
                     "score_reason": score_reason,
                     "rejection_feedback_for_next_candidate": {
-                        "reason": "The candidate is identical to the current seed instruction. For this refinement round, propose a safe changed instruction that addresses the previous rerun regression or cost increase.",
+                        "reason": "The candidate is identical to the original instruction. For this refinement round, propose a safe changed instruction that addresses the previous rerun regression or cost increase.",
                         "round_objective": round_feedback.get("round_objective"),
                         "failure_type": round_feedback.get("failure_type"),
                         "allowed_fix": "Keep the same task interface, but rewrite public-facing requirements, output/completion conditions, or organization to reduce the observed route friction.",
@@ -460,16 +472,31 @@ def main(argv: list[str] | None = None) -> None:
                     run_root=call_dir,
                 )
                 rerun_summary = rerun_info["summary"]
-                reward = float(
-                    rerun_summary.get("reward")
-                    or (1.0 if rerun_summary.get("passed") else 0.0)
-                    or 0.0
+                reward = reported_reward(rerun_summary)
+                if reward is None and isinstance(rerun_summary.get("passed"), bool):
+                    # Compatibility with older binary verifiers, not execution status.
+                    reward = float(rerun_summary["passed"])
+                passed = reward >= 1.0 if reward is not None else None
+                rerun_dir = rerun_info.get("run_dir")
+                recorded_cost_path = Path(rerun_dir) / "cost.json" if rerun_dir else None
+                cost = (
+                    load_cost_summary(recorded_cost_path)
+                    if recorded_cost_path is not None and recorded_cost_path.is_file()
+                    else cost_summary_from_mapping(rerun_summary, source="rerun_summary")
                 )
-                passed = bool(rerun_summary.get("passed") or reward >= 1.0)
+                outcome = CandidateOutcome(
+                    candidate_id=call_dir.name,
+                    instruction=candidate,
+                    reward=reward,
+                    passed=passed,
+                    cost_usd=cost["billable_cost_usd"],
+                    cost_cny=cost["billable_cost_cny"],
+                )
                 rerun_tokens = int(rerun_summary.get("total_tokens") or 0)
                 bonus = 0.0
                 if (
-                    reward > 0
+                    reward is not None
+                    and reward > 0
                     and baseline["baseline_tokens"]
                     and rerun_tokens
                     and rerun_tokens < baseline["baseline_tokens"]
@@ -482,11 +509,14 @@ def main(argv: list[str] | None = None) -> None:
                             / max(1, baseline["baseline_tokens"])
                         ),
                     )
-                score = reward + bonus
+                # This exploration signal steers GEPA only. Retention below uses
+                # measured reward and recorded monetary cost, not this scalar.
+                score = (reward or 0.0) + bonus
                 side_info.update(
                     {
                         "passed": passed,
                         "reward": reward,
+                        "cost_summary": cost,
                         "tokens": rerun_tokens,
                         "tool_calls": int(rerun_summary.get("tool_calls") or 0),
                         "trajectory_summary": compact(
@@ -497,6 +527,7 @@ def main(argv: list[str] | None = None) -> None:
                     }
                 )
                 write_json(call_dir / "rerun_summary.json", rerun_summary)
+                measured_candidates.append(outcome)
             except Exception as exc:
                 score = 0.0
                 side_info["score_reason"] = "rerun_exception"
@@ -515,6 +546,7 @@ def main(argv: list[str] | None = None) -> None:
         )
         history_row = {
             "metric_call": evaluation_counts.metric_calls,
+            "candidate_id": call_dir.name,
             "real_reruns": evaluation_counts.real_reruns,
             "score": score,
             "score_type": "acceptance_gate" if args.candidate_only else "performance_reward_token",
@@ -567,16 +599,40 @@ def main(argv: list[str] | None = None) -> None:
         **optimize_kwargs,
     )
 
-    best_summary = max(history, key=lambda row: row["score"], default=None)
-    if best_summary and best_summary.get("candidate_path"):
+    exploration_best = max(history, key=lambda row: row["score"], default=None)
+    retention = None
+    if not args.candidate_only:
+        retention = retain_candidate(original_outcome, measured_candidates)
+        best_instruction = retention.winner.instruction
+        best_summary = next(
+            (row for row in history if row["candidate_id"] == retention.winner.candidate_id),
+            None,
+        )
+        write_json(
+            result_dir / "retention.json",
+            {
+                "policy": "reward_then_recorded_cost_then_smaller_edit",
+                "retained_candidate_id": retention.winner.candidate_id,
+                "reason": retention.reason,
+                "unresolved_cost_ties": retention.unresolved_cost_ties,
+                "original_reward": original_outcome.reward,
+                "original_cost": baseline_cost,
+                "retained_reward": retention.winner.reward,
+                "retained_cost_usd": retention.winner.cost_usd,
+                "retained_cost_cny": retention.winner.cost_cny,
+                "evaluated_candidates": len(measured_candidates),
+                "gepa_exploration_score_used_for_retention": False,
+            },
+        )
+    elif exploration_best and exploration_best.get("candidate_path"):
+        best_summary = exploration_best
         # Keep final text, score and side_info tied to the same metric call.
         # GEPA result.best_candidate may be absent or may not correspond to
         # the max(history) row in candidate-only/offline modes.
         best_instruction = Path(best_summary["candidate_path"]).read_text(encoding="utf-8")
     else:
-        # If GEPA cannot expose a best candidate, fall back to the current
-        # seed instruction, not the original instruction. This preserves
-        # round-2/round-N refinement state.
+        best_summary = None
+        # Candidate-only mode makes no performance-retention claim.
         best_instruction = extract_best_candidate(result, seed_instruction)
     final_safety = safety_gate_for_mode(
         args.adaptation_mode, original_instruction, best_instruction
@@ -611,17 +667,13 @@ def main(argv: list[str] | None = None) -> None:
                 "and ensure OPENAI_BASE_URL is set for OpenAI-compatible provider routing when needed"
             )
 
-    optimized_passed = (
-        bool(best_summary and best_summary["score"] >= 1.0) if not args.candidate_only else None
-    )
-    optimized_tokens = 0
-    optimized_reward = None if args.candidate_only else 0.0
+    optimized_passed = retention.winner.passed if retention else None
+    optimized_tokens = int(baseline["baseline_tokens"] or 0) if retention else 0
+    optimized_reward = retention.winner.reward if retention else None
     rewritten_instruction_path = result_dir / "best_rewritten_instruction.md"
     if best_summary:
         side_info = read_json(best_summary["side_info_path"])
         optimized_tokens = int(side_info.get("tokens") or 0)
-        if not args.candidate_only:
-            optimized_reward = float(side_info.get("reward") or 0.0)
     accepted_candidates_path = result_dir / "accepted_candidates.jsonl"
     rejected_candidates_path = result_dir / "rejected_candidates.jsonl"
     task_result = {
@@ -636,10 +688,20 @@ def main(argv: list[str] | None = None) -> None:
         "round_objective": round_feedback.get("round_objective"),
         "round_failure_type": round_feedback.get("failure_type"),
         "safety_reference_instruction_path": str(original_instruction_path),
-        "baseline_passed": bool(baseline["baseline_passed"]),
-        "baseline_reward": float(baseline["baseline_reward"] or 0.0),
+        "baseline_passed": original_outcome.passed,
+        "baseline_reward": original_outcome.reward,
         "optimized_passed": optimized_passed,
         "optimized_reward": optimized_reward,
+        "baseline_cost": baseline_cost,
+        "optimized_cost_usd": retention.winner.cost_usd if retention else None,
+        "optimized_cost_cny": retention.winner.cost_cny if retention else None,
+        "retention_policy": "reward_then_recorded_cost_then_smaller_edit" if retention else None,
+        "retention_reason": retention.reason if retention else None,
+        "retained_candidate_id": retention.winner.candidate_id if retention else None,
+        "unresolved_cost_ties": retention.unresolved_cost_ties if retention else [],
+        "retained_changed_instruction": bool(
+            retention and retention.winner.candidate_id != "original"
+        ),
         "candidate_only": bool(args.candidate_only),
         "accepted_candidate": bool(
             args.candidate_only
@@ -661,6 +723,11 @@ def main(argv: list[str] | None = None) -> None:
             1 for row in history if row.get("rejected_for_regeneration")
         ),
         "best_score": best_summary["score"] if best_summary else None,
+        "exploration_best_score": exploration_best["score"] if exploration_best else None,
+        "exploration_best_candidate_id": exploration_best["candidate_id"]
+        if exploration_best
+        else None,
+        "exploration_score_used_for_retention": False if retention else None,
         "score_type": "acceptance_gate" if args.candidate_only else "performance_reward_token",
         "baseline_tokens": int(baseline["baseline_tokens"] or 0),
         "baseline_efficiency_friction": efficiency_friction,

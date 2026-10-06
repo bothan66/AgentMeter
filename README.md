@@ -100,10 +100,12 @@ Original, Self, Cross-only and equal-weight Pooled conditions.
 | **Macro** | **0.333** | **0.531** | **0.434** | **0.458** |
 
 **Pooled increases macro AMS from 0.333 to 0.458 (+0.125)** and changes the
-leading target from GLM × Qwen to Qwen × Kimi. Self measures adaptation to
-the description source; Cross-only measures transfer from the other three
-sources. Pooled evaluates every target on all four sources with equal weights,
-so it does not select a different best description for each target.
+leading target from GLM × Qwen to Qwen × Kimi. **Self is a source-side
+diagnostic**: selection retains a higher-reward candidate, or an equal-reward
+candidate at lower cost, and otherwise keeps Original. Cross-only measures
+transfer from the other three sources after descriptions are frozen. Pooled
+evaluates every target on all four sources with equal weights, so it does not
+select a different best description for each target.
 
 [Condition definitions](docs/paper_alignment.md#conditions-and-counts) ·
 [Archived observations and accounting](artifacts/scoring/README.md)
@@ -111,7 +113,7 @@ so it does not select a different best description for each target.
 ## Reproduce
 
 The release includes **1,160 run records**, frozen task lists and calibration,
-**16 executable tasks**, and **16 selected description pairs** from the
+**16 executable tasks**, and **9 selected description pairs** from the
 64-description study. Core30/Full80 execution uses a separate task checkout.
 [Reproduction scope](docs/reproduction_status.md)
 
@@ -133,7 +135,7 @@ agentmeter tables --descriptive
 
 This recomputes all 28 Core30 rows and the description-condition results
 from the archived observations. No API or Docker is needed. Use
-`agentmeter tables --examples` for the 16 released Original/Self pairs.
+`agentmeter tables --examples` for the 9 released Original/Self pairs.
 
 ### 2. Run an Original/optimized comparison
 
@@ -209,11 +211,12 @@ The rewrite makes that output-file contract explicit.
 | Self rewrite | 1.0 | 0.01726 | 59,868 |
 
 This historical pair preserves reward while reducing recorded cost by **22.9%**.
-The 16 selected examples cover 13 tasks and all four source configurations;
+The 9 selected examples cover 8 tasks and all four source configurations.
+They illustrate clarifications grounded in public requirements and inputs;
 each retains the original benchmark instruction and the evaluated rewrite.
 
 [Read this pair](artifacts/agentmeter_opt_final16/descriptions/qwen36_codex/regex-log/) ·
-[Browse all 16 pairs and results](artifacts/agentmeter_opt_final16/README.md) ·
+[Browse all 9 pairs and results](artifacts/agentmeter_opt_final16/README.md) ·
 [Interpretation and public evidence](docs/description_notes.md)
 
 ## Code map

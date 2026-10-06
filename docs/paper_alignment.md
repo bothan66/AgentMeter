@@ -51,6 +51,9 @@ Both table views use archived `cost_usd` without repricing. The
 historical conversion is 1 / 6.7972 USD/CNY, approximately 0.1471. Legacy CSVs
 retain original CNY fields; manually using the rounded rate can change the
 last displayed decimal. This is historical accounting, not current pricing.
+The original model-rate snapshot is included unchanged in
+[`paper_model_pricing.json`](../configs/paper_model_pricing.json); table
+reproduction still reads recorded per-run costs rather than repricing tokens.
 
 self_summary.csv's AgentMeterScore is an archived legacy field, not the
 manuscript score; it must not be relabeled as AMS. The table command
@@ -60,6 +63,14 @@ CNY aggregate at the rounded 0.1471 rate instead yields 3.370 at three
 decimals; the unified table views avoid that second conversion.
 
 ## Conditions and counts
+
+Self is a source-side diagnostic of description adaptation. Following the
+paper's retention rule, a candidate must improve source reward or preserve it
+at lower cost; otherwise the Original description is retained. Candidates are
+ordered by reward, then billable cost, with smaller task-preserving edits as a
+tie-breaker. Self therefore reflects source-outcome selection, not independent
+evidence of transfer. Descriptions are frozen before evaluating other targets;
+Cross-only and the shared, equal-weight Pooled set test beyond source matching.
 
 - Original: 16 tasks × 4 targets = 64 executions.
 - Self: 16 × 4 = 64 source-matched outcomes.
@@ -71,7 +82,7 @@ decimals; the unified table views avoid that second conversion.
   task and sharing it across targets; not 10,000 new API experiments.
 
 Generic records/descriptions and an executable Adapted-1 reconstruction are
-not included in this compact release. The selected 16 description examples
+not included in this compact release. The selected 9 description examples
 are a subset of the 64 constructed variants, not the full 16-task × 4-source
 grid. Do not confuse this showcase with the complete study.
 

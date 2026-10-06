@@ -34,7 +34,7 @@ def test_tables_use_explicit_checkout_from_another_directory(tmp_path, monkeypat
     monkeypatch.chdir(tmp_path)
     assert main(["tables", "--repository", str(checkout), "--examples"]) == 0
     table = capsys.readouterr().out
-    assert len(table.strip().splitlines()) == 18
+    assert len(table.strip().splitlines()) == 11
     assert "qwen36_codex / regex-log" in table
 
 

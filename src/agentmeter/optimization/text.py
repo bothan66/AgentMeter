@@ -67,7 +67,9 @@ def diff_summary(original: str, rewritten: str) -> dict[str, Any]:
     added = sum(1 for line in diff if line.startswith("+") and not line.startswith("+++"))
     removed = sum(1 for line in diff if line.startswith("-") and not line.startswith("---"))
     return {
-        "changed": " ".join(original.split()) != " ".join(rewritten.split()),
+        # Indentation and line breaks can change code blocks and Markdown.
+        # Only identical text is entitled to reuse the original observation.
+        "changed": original != rewritten,
         "added_lines": added,
         "removed_lines": removed,
         "original_paths": sorted(extract_paths(original)),

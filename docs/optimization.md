@@ -43,6 +43,31 @@ Evaluate candidates on the source model–harness pair with the unchanged task
 environment and verifier. Select by reward first and billable cost second,
 then freeze the selected description for Self/Cross evaluation.
 
+## Selection and recorded costs
+
+The live branch separates **search feedback** from **final retention**.
+GEPA's `reward + token-efficiency bonus` guides candidate exploration; it is
+not the billable-cost metric and does not determine the retained description.
+Final retention uses measured reward first, then recorded cost in a common
+currency, with a smaller edit to Original breaking equal-reward/equal-cost
+ties. A candidate must improve reward or keep reward at lower cost; otherwise
+the output remains Original. `retention.json` records this decision separately
+from the exploration scores. Partial rewards are preserved, and a search
+score above one does not imply that the verifier passed.
+
+For live reruns, configure `--runner-config` and an explicit `--eval-command`.
+`--baseline-result` always refers to the Original outcome; use
+`--previous-result` and `--seed-instruction` for multi-round refinement.
+Recorded costs come from the trial's `cost.json` when present, or explicit
+USD/CNY totals in the result or runner summary. Unknown cost is not zero;
+equal-reward candidates without comparable costs cannot establish savings.
+The optimizer does not substitute a model-independent token-price estimate.
+
+The study's unchanged [price snapshot](../configs/paper_model_pricing.json)
+is included for accounting provenance. Archived paper tables still use
+recorded `cost_usd`, without repricing. Candidate-only generation produces
+proposals for later evaluation, not measured reward or cost improvements.
+
 Review automatic preservation decisions against the original public
 requirements. The [example notes](description_notes.md) explain representative
 historical changes and their interpretation.
@@ -50,7 +75,8 @@ historical changes and their interpretation.
 Implementation is split by responsibility under
 [`src/agentmeter/optimization/`](../src/agentmeter/optimization/):
 `evidence.py` extracts source-trajectory observations, `feedback.py` builds
-round feedback, `policy.py` chooses the optimization objective, `safety.py`
-checks task preservation, and `optimize.py` coordinates candidate construction.
+round feedback, `costs.py` reads recorded charges, and `selection.py` applies
+reward-first retention. `policy.py` chooses the optimization objective,
+`safety.py` screens task preservation, and `optimize.py` coordinates construction.
 Use `agentmeter optimize --help` for refinement and execution options, or
 `agentmeter summarize --help` to collect generated optimization results.
