@@ -85,3 +85,42 @@ def test_setup_refuses_non_git_destination(runtime_repo):
     with pytest.raises(ValueError, match="non-Git path"):
         setup_runtime(runtime_repo, install=False)
     assert (checkout / "notes").read_text() == "user data"
+
+
+@pytest.mark.parametrize(
+    "python_packages",
+    [None, {"litellm": "1.91.0", "claude-agent-sdk": "0.1.20"}],
+)
+def test_install_applies_optional_python_pins_in_one_pip_call(
+    runtime_repo, monkeypatch, python_packages
+):
+    lock_path = runtime_repo / "integrations/agentmeter_runtime.lock.json"
+    if python_packages is not None:
+        lock = json.loads(lock_path.read_text())
+        lock["python_packages"] = python_packages
+        lock_path.write_text(json.dumps(lock))
+
+    bin_dir = runtime_repo.parent / "test-bin"
+    bin_dir.mkdir()
+    python = str(bin_dir / "python")
+    harbor = bin_dir / "harbor"
+    harbor.touch()
+    monkeypatch.setattr("agentmeter.runtime.setup.sys.executable", python)
+    real_run = subprocess.run
+    install_commands = []
+
+    def fake_install(command, **kwargs):
+        if command[0] in {python, str(harbor)}:
+            install_commands.append(command)
+            return subprocess.CompletedProcess(command, 0)
+        return real_run(command, **kwargs)
+
+    monkeypatch.setattr("agentmeter.runtime.setup.subprocess.run", fake_install)
+    checkout = setup_runtime(runtime_repo)
+    expected_requirements = [
+        f"{name}=={version}" for name, version in (python_packages or {}).items()
+    ]
+    assert install_commands == [
+        [python, "-m", "pip", "install", "-e", str(checkout), *expected_requirements],
+        [str(harbor), "--help"],
+    ]

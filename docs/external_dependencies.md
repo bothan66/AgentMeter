@@ -29,6 +29,11 @@ checkout outside this repository and set `AGENTMETER_TASK_ROOT` to it. Exact
 dependency and task-source pins are machine-readable in
 [`integrations/agentmeter_runtime.lock.json`](../integrations/agentmeter_runtime.lock.json).
 
+Use a dedicated virtual environment for this runtime. The lock also records
+the tested Python compatibility pins, `litellm==1.91.0` and
+`claude-agent-sdk==0.1.20`; setup installs these together with Harbor. These
+pins cover the key compatibility dependencies, not every transitive package.
+
 The patch includes provider configuration for Codex, cache usage fields, and
 CLI installation support. It retains historical npm mirror settings and the
 Qwen cache-control modification. These affect the execution configuration and
@@ -41,6 +46,12 @@ Docker must be installed and accessible to the invoking user. Building task
 images requires registry and package-index access. Harbor installs the target
 CLI inside each task container. Set `AGENTMETER_AGENT_VERSION` to pin its
 version; leaving it unset uses Harbor's default and is not version-frozen.
+
+On slow package networks, add `--setup-timeout-multiplier 3` to `agentmeter compare`
+or `agentmeter suite`. This extends CLI installation time only; agent execution
+and verifier time budgets stay unchanged. The runner reports Harbor trial errors
+even when Harbor itself exits with status zero; inspect the indicated `result.json`
+and trial exception logs before interpreting reward values.
 
 ## Provider routing
 

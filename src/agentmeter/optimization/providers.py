@@ -40,6 +40,7 @@ DEFAULT_REFLECTION_OPENAI_BASE_URL = "https://dashscope.aliyuncs.com/compatible-
 
 
 def discover_runner_config(explicit: Path | None) -> Path | None:
+    """Resolve an explicit runner file or discover the repository's local configuration."""
     if explicit:
         return explicit if explicit.exists() else None
     try:
@@ -53,6 +54,7 @@ def discover_runner_config(explicit: Path | None) -> Path | None:
 
 
 def parse_combo(combo: str, model: str | None, cli: str | None) -> tuple[str, str]:
+    """Resolve a saved combo name into the model and harness used by its API route."""
     if model and cli:
         return model, cli
     if "__" in combo:
@@ -69,6 +71,7 @@ def parse_combo(combo: str, model: str | None, cli: str | None) -> tuple[str, st
 
 
 def detect_gepa() -> dict[str, Any]:
+    """Report installed GEPA capabilities without requiring the optional dependency."""
     info: dict[str, Any] = {
         "installed": False,
         "module_path": "",
@@ -78,7 +81,7 @@ def detect_gepa() -> dict[str, Any]:
     }
     try:
         gepa = importlib.import_module("gepa")
-        oa = importlib.import_module("gepa.optimize_anything")
+        gepa_optimizer = importlib.import_module("gepa.optimize_anything")
     except Exception as exc:
         info["error"] = str(exc)
         return info
@@ -89,16 +92,19 @@ def detect_gepa() -> dict[str, Any]:
     except Exception:
         info["version"] = ""
     info["api"] = {
-        "optimize_anything_module": str(getattr(oa, "__file__", "")),
-        "optimize_anything_signature": str(inspect.signature(getattr(oa, "optimize_anything"))),
-        "has_GEPAConfig": hasattr(oa, "GEPAConfig"),
-        "has_EngineConfig": hasattr(oa, "EngineConfig"),
-        "has_log": hasattr(oa, "log"),
+        "optimize_anything_module": str(getattr(gepa_optimizer, "__file__", "")),
+        "optimize_anything_signature": str(
+            inspect.signature(getattr(gepa_optimizer, "optimize_anything"))
+        ),
+        "has_GEPAConfig": hasattr(gepa_optimizer, "GEPAConfig"),
+        "has_EngineConfig": hasattr(gepa_optimizer, "EngineConfig"),
+        "has_log": hasattr(gepa_optimizer, "log"),
     }
     return info
 
 
 def runner_has_route(runner_config: Path | None, model: str, cli: str) -> bool:
+    """Check local model-harness routing without contacting the runner service."""
     if not runner_config:
         return False
     try:
@@ -155,14 +161,15 @@ def configure_reflection_provider_environment(reflection_model: str | None) -> d
 
 
 def configure_gepa_call(
-    oa_module: Any, args: argparse.Namespace, result_dir: Path
+    gepa_optimizer: Any, args: argparse.Namespace, result_dir: Path
 ) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Build optimizer call options and record the detected GEPA API signatures."""
     kwargs: dict[str, Any] = {}
     meta: dict[str, Any] = {"config_mode": "none"}
-    optimize_sig = inspect.signature(oa_module.optimize_anything)
-    if hasattr(oa_module, "GEPAConfig") and hasattr(oa_module, "EngineConfig"):
-        engine_cls = oa_module.EngineConfig
-        gepa_cls = oa_module.GEPAConfig
+    optimize_sig = inspect.signature(gepa_optimizer.optimize_anything)
+    if hasattr(gepa_optimizer, "GEPAConfig") and hasattr(gepa_optimizer, "EngineConfig"):
+        engine_cls = gepa_optimizer.EngineConfig
+        gepa_cls = gepa_optimizer.GEPAConfig
         try:
             engine_sig = inspect.signature(engine_cls)
             engine_kwargs = {}
@@ -179,8 +186,8 @@ def configure_gepa_call(
             gepa_kwargs = {}
             if "engine" in gepa_sig.parameters:
                 gepa_kwargs["engine"] = engine
-            if hasattr(oa_module, "ReflectionConfig") and "reflection" in gepa_sig.parameters:
-                reflection_cls = oa_module.ReflectionConfig
+            if hasattr(gepa_optimizer, "ReflectionConfig") and "reflection" in gepa_sig.parameters:
+                reflection_cls = gepa_optimizer.ReflectionConfig
                 reflection_sig = inspect.signature(reflection_cls)
                 reflection_kwargs = {}
                 if "reflection_lm" in reflection_sig.parameters and args.reflection_model:
@@ -214,6 +221,7 @@ def configure_gepa_call(
 
 
 def extract_best_candidate(result: Any, seed_candidate: str) -> str:
+    """Read candidate text from supported GEPA result shapes, falling back to the seed."""
     if hasattr(result, "best_candidate"):
         best = result.best_candidate
     elif isinstance(result, dict):

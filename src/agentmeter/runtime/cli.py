@@ -24,7 +24,11 @@ def _setup(args: argparse.Namespace) -> int:
 def _execute(args: argparse.Namespace) -> int:
     repo = find_repository(args.repo_root)
     options = RunOptions.from_environment(
-        model=args.model, agent=args.agent, harbor=args.harbor, agent_version=args.agent_version
+        model=args.model,
+        agent=args.agent,
+        harbor=args.harbor,
+        agent_version=args.agent_version,
+        setup_timeout_multiplier=args.setup_timeout_multiplier,
     )
     if args.command == "compare":
         plan = plan_comparison(
@@ -87,6 +91,11 @@ def register_subcommands(subparsers: argparse._SubParsersAction) -> None:
             "--agent-version", help="Agent CLI version (or AGENTMETER_AGENT_VERSION)"
         )
         parser.add_argument("--harbor", help="Harbor executable (or AGENTMETER_HARBOR_BIN)")
+        parser.add_argument(
+            "--setup-timeout-multiplier",
+            type=float,
+            help="Scale CLI installation time only; leaves agent and verifier budgets unchanged",
+        )
         parser.add_argument(
             "--jobs-dir", type=Path, help="Output directory (or AGENTMETER_JOBS_DIR)"
         )

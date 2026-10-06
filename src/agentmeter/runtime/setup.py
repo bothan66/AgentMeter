@@ -45,6 +45,18 @@ def setup_runtime(repo: Path, *, vendor_dir: Path | None = None, install: bool =
     if shutil.which("git") is None:
         raise ValueError("Git is required to install Harbor")
     lock = json.loads((repo / "integrations/agentmeter_runtime.lock.json").read_text())
+    python_packages = lock.get("python_packages", {})
+    if not isinstance(python_packages, dict):
+        raise ValueError("Runtime python_packages must map package names to exact versions")
+    python_requirements = []
+    for package, version in python_packages.items():
+        if (
+            not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", package)
+            or not isinstance(version, str)
+            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9.!+_-]*", version)
+        ):
+            raise ValueError(f"Invalid Python package pin in runtime lock: {package}")
+        python_requirements.append(f"{package}=={version}")
     config = lock["harbor"]
     commit = config["commit"]
     if not re.fullmatch(r"[0-9a-f]{40}", commit):
@@ -109,7 +121,10 @@ def setup_runtime(repo: Path, *, vendor_dir: Path | None = None, install: bool =
             stderr=subprocess.PIPE,
         )
     if install:
-        subprocess.run([sys.executable, "-m", "pip", "install", "-e", str(checkout)], check=True)
+        subprocess.run(
+            [sys.executable, "-m", "pip", "install", "-e", str(checkout), *python_requirements],
+            check=True,
+        )
         harbor = Path(sys.executable).parent / "harbor"
         if not harbor.is_file():
             raise ValueError(f"Harbor installation did not provide {harbor}")

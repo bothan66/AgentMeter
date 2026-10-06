@@ -11,6 +11,11 @@ requires-python = ">=3.11"
 license = {text = "MIT"}
 dependencies = ["PyYAML>=6"]
 
+[project.urls]
+Repository = "https://github.com/bothan66/AgentMeter"
+Documentation = "https://github.com/bothan66/AgentMeter#reproduce"
+Issues = "https://github.com/bothan66/AgentMeter/issues"
+
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.9"]
 opt = ["gepa==0.1.1", "litellm==1.91.0"]

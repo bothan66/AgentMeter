@@ -160,6 +160,54 @@ def test_environment_settings_are_overridable_without_recording_credentials():
     assert "test-provider-key" not in repr(settings)
 
 
+@pytest.mark.parametrize("multiplier", [0, -1, float("nan"), float("inf"), -float("inf")])
+def test_setup_timeout_multiplier_rejects_invalid_values(multiplier):
+    with pytest.raises(ValueError, match="positive finite"):
+        RunOptions("model", "codex", setup_timeout_multiplier=multiplier)
+
+
+def test_setup_timeout_multiplier_does_not_change_execution_budgets(tmp_path):
+    options = RunOptions.from_environment(
+        model="model",
+        agent="codex",
+        setup_timeout_multiplier=3.0,
+    )
+    plan = plan_comparison(
+        ROOT, "qwen36_codex", "original", ["regex-log"], options, jobs_dir=tmp_path / "jobs"
+    )
+    command = plan.command(plan.tasks[0])
+    assert command[command.index("--agent-setup-timeout-multiplier") + 1] == "3.0"
+    assert "--timeout-multiplier" not in command
+    assert "--agent-timeout-multiplier" not in command
+    assert "--verifier-timeout-multiplier" not in command
+
+
+@pytest.mark.parametrize("errors", [0, 1])
+def test_harbor_trial_errors_are_distinct_from_zero_reward(tmp_path, monkeypatch, errors):
+    plan = plan_comparison(
+        ROOT, "qwen36_codex", "original", ["regex-log"], OPTIONS, jobs_dir=tmp_path / "jobs"
+    )
+
+    def mock_harbor(command, *, check):
+        result_path = plan.jobs_dir / plan.tasks[0].job_name / "result.json"
+        result_path.parent.mkdir(parents=True)
+        result_path.write_text(
+            json.dumps(
+                {
+                    "stats": {"n_errors": errors, "evals": {"reward": 0}},
+                }
+            )
+        )
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr("agentmeter.runtime.experiments.subprocess.run", mock_harbor)
+    if errors:
+        with pytest.raises(ValueError, match="Harbor reported 1 trial error.*result.json"):
+            run_plan(plan)
+    else:
+        run_plan(plan)
+
+
 def test_cli_dry_run_does_not_create_jobs_or_require_harbor(tmp_path):
     result = subprocess.run(
         [
@@ -178,6 +226,8 @@ def test_cli_dry_run_does_not_create_jobs_or_require_harbor(tmp_path):
             str(tmp_path / "jobs"),
             "--harbor",
             "/definitely/uninstalled/harbor",
+            "--setup-timeout-multiplier",
+            "3",
             "--dry-run",
         ],
         capture_output=True,
@@ -187,6 +237,7 @@ def test_cli_dry_run_does_not_create_jobs_or_require_harbor(tmp_path):
     assert result.returncode == 0, result.stderr
     assert "--job-name final16_regex-log_qwen36_codex_optimized" in result.stdout
     assert "optimized_instruction.md" in result.stdout
+    assert "--agent-setup-timeout-multiplier 3.0" in result.stdout
     assert not (tmp_path / "jobs").exists()
 
 

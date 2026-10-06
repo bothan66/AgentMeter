@@ -7,6 +7,8 @@ environment, never through generated files or command-line arguments.
 
 from __future__ import annotations
 
+import json
+import math
 import os
 import re
 import shutil
@@ -34,6 +36,12 @@ class RunOptions:
     agent: str
     harbor: str = "harbor"
     agent_version: str | None = None
+    setup_timeout_multiplier: float | None = None
+
+    def __post_init__(self) -> None:
+        multiplier = self.setup_timeout_multiplier
+        if multiplier is not None and (not math.isfinite(multiplier) or multiplier <= 0):
+            raise ValueError("Setup timeout multiplier must be a positive finite number")
 
     @classmethod
     def from_environment(
@@ -43,6 +51,7 @@ class RunOptions:
         agent: str | None = None,
         harbor: str | None = None,
         agent_version: str | None = None,
+        setup_timeout_multiplier: float | None = None,
         environment: Mapping[str, str] | None = None,
     ) -> RunOptions:
         env = os.environ if environment is None else environment
@@ -55,6 +64,7 @@ class RunOptions:
             agent,
             harbor or env.get("AGENTMETER_HARBOR_BIN", "harbor"),
             agent_version or env.get("AGENTMETER_AGENT_VERSION"),
+            setup_timeout_multiplier,
         )
 
 
@@ -88,6 +98,13 @@ class RunPlan:
         ]
         if self.options.agent_version:
             args.extend(["--ak", f"version={self.options.agent_version}"])
+        if self.options.setup_timeout_multiplier is not None:
+            args.extend(
+                [
+                    "--agent-setup-timeout-multiplier",
+                    str(self.options.setup_timeout_multiplier),
+                ]
+            )
         return args + [
             "-e",
             "docker",
@@ -270,3 +287,14 @@ def run_plan(plan: RunPlan) -> None:
             shutil.copyfile(task.instruction, instruction)
     for task in plan.tasks:
         subprocess.run(plan.command(task), check=True)
+        # Harbor can exit successfully even when trial setup or execution fails.
+        # A completed zero-reward trial is still a valid benchmark observation.
+        result_path = plan.jobs_dir / task.job_name / "result.json"
+        if result_path.is_file():
+            result = json.loads(result_path.read_text())
+            errors = result.get("stats", {}).get("n_errors", 0)
+            if errors > 0:
+                raise ValueError(
+                    f"Harbor reported {errors} trial error(s) for {task.task_id}; "
+                    f"inspect {result_path} and the trial exception logs"
+                )

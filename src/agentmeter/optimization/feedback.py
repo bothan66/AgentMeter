@@ -14,6 +14,7 @@ from .text import compact, diff_summary
 
 
 def load_baseline_result(path: Path | None, task_id: str, combo: str) -> dict[str, Any]:
+    """Read runner or Harbor outcomes using the original experiment's token conventions."""
     baseline = {
         "baseline_passed": False,
         "baseline_reward": 0.0,
@@ -133,6 +134,7 @@ def load_baseline_result(path: Path | None, task_id: str, combo: str) -> dict[st
 
 
 def trial_dir_for_result_path(path: Path | None) -> Path | None:
+    """Locate trial artifacts beside a result file or the agent's trajectory file."""
     if not path:
         return None
     if path.is_dir():
@@ -157,6 +159,7 @@ def trajectory_path_for_result(path: Path | None) -> Path | None:
 
 
 def load_cost_summary(path: Path | None) -> dict[str, Any]:
+    """Prefer archived costs; otherwise retain the experiment's historical cache pricing."""
     trial_dir = trial_dir_for_result_path(path)
     if not trial_dir:
         return {"available": False}
@@ -257,7 +260,7 @@ def load_cost_summary(path: Path | None) -> dict[str, Any]:
     }
 
 
-def _float_or_none(value: Any) -> float | None:
+def _optional_float(value: Any) -> float | None:
     try:
         if value in (None, ""):
             return None
@@ -266,10 +269,11 @@ def _float_or_none(value: Any) -> float | None:
         return None
 
 
-def _pct_delta(base: float | None, new: float | None) -> float | None:
-    if base in (None, 0) or new is None:
+def _percent_change(baseline_value: float | None, current_value: float | None) -> float | None:
+    """Measure relative change, returning None when a percentage is undefined."""
+    if baseline_value in (None, 0) or current_value is None:
         return None
-    return ((new - base) / base) * 100.0
+    return ((current_value - baseline_value) / baseline_value) * 100.0
 
 
 def build_round_feedback(
@@ -301,16 +305,16 @@ def build_round_feedback(
             public_instruction=public_instruction,
             max_events=max_events,
         )
-    baseline_reward = _float_or_none(baseline.get("baseline_reward"))
-    previous_reward = _float_or_none(previous.get("baseline_reward"))
-    baseline_bill = _float_or_none(baseline_cost.get("billable_cost_cny"))
-    previous_bill = _float_or_none(previous_cost.get("billable_cost_cny"))
+    baseline_reward = _optional_float(baseline.get("baseline_reward"))
+    previous_reward = _optional_float(previous.get("baseline_reward"))
+    baseline_bill = _optional_float(baseline_cost.get("billable_cost_cny"))
+    previous_bill = _optional_float(previous_cost.get("billable_cost_cny"))
     reward_delta = (
         None
         if baseline_reward is None or previous_reward is None
         else previous_reward - baseline_reward
     )
-    cost_delta_pct = _pct_delta(baseline_bill, previous_bill)
+    cost_delta_pct = _percent_change(baseline_bill, previous_bill)
     seed_diff = diff_summary(original_instruction, seed_instruction)
     if not previous_result and adaptation_mode == "generic_no_trajectory":
         failure_type = ""

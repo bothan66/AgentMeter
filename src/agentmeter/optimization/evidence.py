@@ -38,16 +38,17 @@ def _tool_target(call: dict[str, Any]) -> str:
     return ""
 
 
-def _obs_text(step: dict[str, Any]) -> str:
-    obs = step.get("observation")
-    if isinstance(obs, dict):
+def _observation_text(step: dict[str, Any]) -> str:
+    """Flatten a tool observation while preserving the order of returned result blocks."""
+    observation = step.get("observation")
+    if isinstance(observation, dict):
         chunks = []
-        for item in obs.get("results") or []:
+        for item in observation.get("results") or []:
             if isinstance(item, dict):
                 chunks.append(str(item.get("content") or item.get("text") or ""))
         if chunks:
             return "\n".join(chunks)
-    return str(obs or "")
+    return str(observation or "")
 
 
 def _step_id(step: dict[str, Any], idx: int) -> str:
@@ -272,12 +273,12 @@ def build_trajectory_evidence(
             + int(metrics.get("completion_tokens") or 0)
             + int(metrics.get("cached_tokens") or 0)
         )
-        obs = _obs_text(step)
+        observation = _observation_text(step)
         raw_text_blob = " ".join(
             [
                 str(step.get("message") or ""),
                 str(step.get("reasoning_content") or ""),
-                obs,
+                observation,
             ]
         )
         text_blob = raw_text_blob.lower()
@@ -287,10 +288,10 @@ def build_trajectory_evidence(
         ):
             tags.append("error_or_feedback")
         matched_anchors = _match_public_anchors(raw_text_blob, public_anchors)
-        obs_lower = obs.lower()
+        observation_lower = observation.lower()
         if re.search(
             r"\b(assert|expected|actual|mismatch|not equal|wrong|test failed|failure|failed)\b",
-            obs_lower,
+            observation_lower,
         ) or re.search(r"\b(expected|actual|mismatch|not equal|wrong|test failed)\b", text_blob):
             tags.append("outcome_contradiction")
         if _contains_any(text_blob, ("saved", "output", "result", "csv", "json", "xlsx", "pdf")):
@@ -330,7 +331,7 @@ def build_trajectory_evidence(
             "message": compact(step.get("message"), 450),
             "agent_reasoning": compact(step.get("reasoning_content"), 900),
             "tool_calls": tools[:8],
-            "observation_snippet": compact(obs, 700),
+            "observation_snippet": compact(observation, 700),
             "matched_public_anchors": matched_anchors,
             "metrics": {
                 "prompt_tokens": metrics.get("prompt_tokens"),
@@ -352,7 +353,7 @@ def build_trajectory_evidence(
                     "event_id": row["event_id"],
                     "decision_kind": _route_decision_kind(raw_text_blob, tools),
                     "summary": compact(
-                        step.get("reasoning_content") or step.get("message") or obs, 360
+                        step.get("reasoning_content") or step.get("message") or observation, 360
                     ),
                     "public_basis": matched_anchors[:2],
                     "uncertainty_or_hesitation": bool(

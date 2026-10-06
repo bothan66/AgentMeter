@@ -7,6 +7,7 @@ import difflib
 import importlib
 import json
 import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -36,8 +37,16 @@ from .providers import (
 from .text import compact, diff_summary, ensure_empty_dir, safe_name, write_text
 
 
-def main(argv: list[str] | None = None) -> None:
-    """Optimize one public task instruction using recorded trajectory feedback."""
+@dataclass
+class _EvaluationCounts:
+    """Track candidate evaluations separately from live agent reruns."""
+
+    metric_calls: int = 0
+    real_reruns: int = 0
+
+
+def _parse_arguments(argv: list[str] | None) -> argparse.Namespace:
+    """Parse the optimization command and validate inputs before any file writes."""
     parser = argparse.ArgumentParser(prog="agentmeter optimize", description=__doc__)
     parser.add_argument("--task-id", default="dm-csv-001")
     parser.add_argument("--task-root", type=Path, required=True)
@@ -105,6 +114,12 @@ def main(argv: list[str] | None = None) -> None:
         parser.error(
             "--eval-command is required for live reruns; it must verify the agent-produced outputs."
         )
+    return args
+
+
+def main(argv: list[str] | None = None) -> None:
+    """Optimize one public task instruction using recorded trajectory feedback."""
+    args = _parse_arguments(argv)
 
     if args.adaptation_mode == "generic_no_trajectory" and not args.model and not args.cli:
         model, cli = "generic-public-rewrite", "generic-public-rewrite"
@@ -227,21 +242,21 @@ def main(argv: list[str] | None = None) -> None:
                 f"runner config {runner_config} does not provide a route for model={model!r}, cli={cli!r}"
             )
 
-    oa_module = importlib.import_module("gepa.optimize_anything")
-    optimize_anything = getattr(oa_module, "optimize_anything")
-    optimize_kwargs, api_meta = configure_gepa_call(oa_module, args, result_dir)
+    gepa_optimizer = importlib.import_module("gepa.optimize_anything")
+    optimize_anything = getattr(gepa_optimizer, "optimize_anything")
+    optimize_kwargs, api_meta = configure_gepa_call(gepa_optimizer, args, result_dir)
     setup["gepa_info"]["resolved_api"] = api_meta
     write_json(result_dir / "gepa_setup.json", setup)
 
-    state = {"metric_calls": 0, "real_reruns": 0}
+    evaluation_counts = _EvaluationCounts()
     history: list[dict[str, Any]] = []
     candidate_cache: dict[str, dict[str, Any]] = {}
     rejection_feedback_memory: list[dict[str, Any]] = []
 
     def evaluator(candidate: str) -> float:
-        state["metric_calls"] += 1
+        evaluation_counts.metric_calls += 1
         candidate_key = " ".join(candidate.split())
-        call_dir = result_dir / "metric_calls" / f"metric_call_{state['metric_calls']:03d}"
+        call_dir = result_dir / "metric_calls" / f"metric_call_{evaluation_counts.metric_calls:03d}"
         call_dir.mkdir(parents=True, exist_ok=True)
         write_text(call_dir / "rewritten_instruction.md", candidate)
         diff = diff_summary(original_instruction, candidate)
@@ -302,11 +317,11 @@ def main(argv: list[str] | None = None) -> None:
                 ),
             },
         }
-        if hasattr(oa_module, "log"):
-            oa_module.log("safety_result=" + json.dumps(safety, ensure_ascii=False))
-            oa_module.log("diff_summary=" + json.dumps(diff, ensure_ascii=False))
+        if hasattr(gepa_optimizer, "log"):
+            gepa_optimizer.log("safety_result=" + json.dumps(safety, ensure_ascii=False))
+            gepa_optimizer.log("diff_summary=" + json.dumps(diff, ensure_ascii=False))
             if adaptation_policy.get("uses_trajectory_feedback", True):
-                oa_module.log(
+                gepa_optimizer.log(
                     "trajectory_efficiency_feedback="
                     + json.dumps(
                         {
@@ -331,7 +346,7 @@ def main(argv: list[str] | None = None) -> None:
                     )
                 )
             else:
-                oa_module.log(
+                gepa_optimizer.log(
                     "public_only_rewrite_mode="
                     + json.dumps(
                         {
@@ -341,8 +356,8 @@ def main(argv: list[str] | None = None) -> None:
                         ensure_ascii=False,
                     )
                 )
-            oa_module.log("round_feedback=" + json.dumps(round_feedback, ensure_ascii=False))
-            oa_module.log(
+            gepa_optimizer.log("round_feedback=" + json.dumps(round_feedback, ensure_ascii=False))
+            gepa_optimizer.log(
                 "baseline_summary="
                 + json.dumps(
                     {key: value for key, value in baseline.items() if key != "trajectory_evidence"},
@@ -426,11 +441,11 @@ def main(argv: list[str] | None = None) -> None:
                     "candidate_only": True,
                 }
             )
-        elif state["real_reruns"] >= args.max_real_reruns:
+        elif evaluation_counts.real_reruns >= args.max_real_reruns:
             score = 0.0
             side_info["score_reason"] = "rerun_budget_exhausted"
         else:
-            state["real_reruns"] += 1
+            evaluation_counts.real_reruns += 1
             try:
                 rerun_info = run_agent_task(
                     original_task_root=args.task_root.resolve(),
@@ -499,8 +514,8 @@ def main(argv: list[str] | None = None) -> None:
             else {}
         )
         history_row = {
-            "metric_call": state["metric_calls"],
-            "real_reruns": state["real_reruns"],
+            "metric_call": evaluation_counts.metric_calls,
+            "real_reruns": evaluation_counts.real_reruns,
             "score": score,
             "score_type": "acceptance_gate" if args.candidate_only else "performance_reward_token",
             "candidate_path": str(call_dir / "rewritten_instruction.md"),
@@ -529,7 +544,7 @@ def main(argv: list[str] | None = None) -> None:
             )
             feedback.update(
                 {
-                    "metric_call": state["metric_calls"],
+                    "metric_call": evaluation_counts.metric_calls,
                     "candidate_path": str(call_dir / "rewritten_instruction.md"),
                     "score_reason": side_info.get("score_reason"),
                 }
@@ -672,8 +687,8 @@ def main(argv: list[str] | None = None) -> None:
         "unsupported_added_preferences": final_safety.get("unsupported_added_preferences", []),
         "rewritten_instruction_path": str(rewritten_instruction_path),
         "diff_path": str(result_dir / "best_instruction.diff"),
-        "metric_calls": state["metric_calls"],
-        "real_reruns": state["real_reruns"],
+        "metric_calls": evaluation_counts.metric_calls,
+        "real_reruns": evaluation_counts.real_reruns,
         "result_dir": str(result_dir),
         "runner_connected": runner_connected,
         "adaptation_mode": args.adaptation_mode,
