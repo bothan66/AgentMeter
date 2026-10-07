@@ -1,10 +1,10 @@
 # Description adaptations and paired results
 
-Nine evaluated description pairs cover 8 distinct tasks and all four source
+Twelve evaluated description pairs cover 9 distinct tasks and all four source
 configurations. Selected for traceable links to public requirements and input
 artifacts, they illustrate trajectory-guided clarification of paths, schemas,
-and deliverables. Selection is not based on the size or direction of cost
-changes. All released instructions retain their historical wording; the full
+deliverables, and interface behavior. Selection is not based on the size or
+direction of cost changes. All released instructions retain their historical wording; the full
 64-description set is not included.
 
 ## Paired results
@@ -16,13 +16,16 @@ records, the same inputs as the main-table AMS calculation.
 | Source pair / task | Reward: Original → Self | USD: Original → Self | Cost change |
 |:--|--:|--:|--:|
 | [deepseek_v4_kimi_cli / dm-csv-009](descriptions/deepseek_v4_kimi_cli/dm-csv-009/) | 0.333 → 0.333 | 0.04906 → 0.04318 | -12.0% |
+| [deepseek_v4_kimi_cli / lru-cache-with-ttl](descriptions/deepseek_v4_kimi_cli/lru-cache-with-ttl/) | 0.000 → 1.000 | 0.06181 → 0.09909 | +60.3% |
 | [deepseek_v4_kimi_cli / pddl-tpp-planning](descriptions/deepseek_v4_kimi_cli/pddl-tpp-planning/) | 0.000 → 0.000 | 0.10940 → 0.09830 | -10.2% |
 | [deepseek_v4_kimi_cli / virtualhome-agent-planning](descriptions/deepseek_v4_kimi_cli/virtualhome-agent-planning/) | 0.000 → 0.000 | 0.18972 → 0.16127 | -15.0% |
 | [glm51_qwen_coder / bash-script-debugger](descriptions/glm51_qwen_coder/bash-script-debugger/) | 1.000 → 1.000 | 0.07054 → 0.05525 | -21.7% |
 | [glm51_qwen_coder / dm-csv-009](descriptions/glm51_qwen_coder/dm-csv-009/) | 0.333 → 0.333 | 0.05093 → 0.03515 | -31.0% |
+| [glm51_qwen_coder / sales-pivot-analysis](descriptions/glm51_qwen_coder/sales-pivot-analysis/) | 0.000 → 1.000 | 0.13910 → 0.13539 | -2.7% |
 | [qwen36_codex / citation-check](descriptions/qwen36_codex/citation-check/) | 0.000 → 1.000 | 0.11176 → 0.04519 | -59.6% |
 | [qwen36_codex / regex-log](descriptions/qwen36_codex/regex-log/) | 1.000 → 1.000 | 0.02238 → 0.01726 | -22.9% |
 | [qwen36_codex / sales-pivot-analysis](descriptions/qwen36_codex/sales-pivot-analysis/) | 0.000 → 1.000 | 0.04163 → 0.05957 | +43.1% |
+| [qwen36_kimi_cli / bash-script-debugger](descriptions/qwen36_kimi_cli/bash-script-debugger/) | 1.000 → 1.000 | 0.01225 → 0.00863 | -29.6% |
 | [qwen36_kimi_cli / dm-csv-011](descriptions/qwen36_kimi_cli/dm-csv-011/) | 0.000 → 0.000 | 0.07135 → 0.06537 | -8.4% |
 
 Recompute this table with `agentmeter tables --examples`.
@@ -35,9 +38,9 @@ reward and cost together. Complete-study comparisons use the full result grid.
 | Source | Example focus |
 |:--|:--|
 | Qwen × Codex | Citation normalization, regex output contracts, demographic report organization |
-| Qwen × Kimi | CSV template schema and output path |
-| DeepSeek × Kimi | Planning output syntax and public file references |
-| GLM × Qwen | Bug-fix deliverables and author-table schema |
+| Qwen × Kimi | CSV template schema and completion after the public Bash test |
+| DeepSeek × Kimi | Planning output syntax, public file references, and cache update behavior |
+| GLM × Qwen | Bug-fix deliverables, author-table schema, and demographic input structure |
 
 Each directory contains the Original and evaluated rewritten instruction.
 See [description notes](../../docs/description_notes.md) for task-specific
@@ -59,7 +62,7 @@ These pairs document AgentMeter-Opt's changes to benchmark task descriptions:
 | Local task collection | Examples in this catalog | Source attribution |
 |:--|:--|:--|
 | `skillsbench` | citation-check, sales-pivot-analysis, virtualhome-agent-planning, pddl-tpp-planning | [SkillsBench](https://github.com/benchflow-ai/skillsbench) |
-| `terminal_bench` | regex-log, bash-script-debugger | Local Terminal-Bench-compatible collection; compatibility is not a claim of an official upstream snapshot |
+| `terminal_bench` | regex-log, bash-script-debugger, lru-cache-with-ttl | Local Terminal-Bench-compatible collection; compatibility is not a claim of an official upstream snapshot |
 | `da_code` | dm-csv-009, dm-csv-011 | Local [DA-Code](https://github.com/yiyihum/da-code)-compatible collection |
 
 Original content and retained material in rewrites remain subject to their

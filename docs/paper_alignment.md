@@ -82,7 +82,7 @@ Cross-only and the shared, equal-weight Pooled set test beyond source matching.
   task and sharing it across targets; not 10,000 new API experiments.
 
 Generic records/descriptions and an executable Adapted-1 reconstruction are
-not included in this compact release. The selected 9 description examples
+not included in this compact release. The selected 12 description examples
 are a subset of the 64 constructed variants, not the full 16-task × 4-source
 grid. Do not confuse this showcase with the complete study.
 

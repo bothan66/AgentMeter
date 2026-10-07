@@ -113,7 +113,7 @@ select a different best description for each target.
 ## Reproduce
 
 The release includes **1,160 run records**, frozen task lists and calibration,
-**16 executable tasks**, and **9 selected description pairs** from the
+**16 executable tasks**, and **12 selected description pairs** from the
 64-description study. Core30/Full80 execution uses a separate task checkout.
 [Reproduction scope](docs/reproduction_status.md)
 
@@ -135,7 +135,7 @@ agentmeter tables --descriptive
 
 This recomputes all 28 Core30 rows and the description-condition results
 from the archived observations. No API or Docker is needed. Use
-`agentmeter tables --examples` for the 9 released Original/Self pairs.
+`agentmeter tables --examples` for the 12 released Original/Self pairs.
 
 ### 2. Run an Original/optimized comparison
 
@@ -211,12 +211,12 @@ The rewrite makes that output-file contract explicit.
 | Self rewrite | 1.0 | 0.01726 | 59,868 |
 
 This historical pair preserves reward while reducing recorded cost by **22.9%**.
-The 9 selected examples cover 8 tasks and all four source configurations.
-They illustrate clarifications grounded in public requirements and inputs;
+The 12 selected examples cover 9 tasks and all four source configurations.
+They illustrate interface behavior, public schemas and completion conditions;
 each retains the original benchmark instruction and the evaluated rewrite.
 
 [Read this pair](artifacts/agentmeter_opt_final16/descriptions/qwen36_codex/regex-log/) ·
-[Browse all 9 pairs and results](artifacts/agentmeter_opt_final16/README.md) ·
+[Browse all 12 pairs and results](artifacts/agentmeter_opt_final16/README.md) ·
 [Interpretation and public evidence](docs/description_notes.md)
 
 ## Code map

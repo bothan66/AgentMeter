@@ -68,15 +68,20 @@ def test_frozen_selections_and_descriptions():
     )
     expected = {
         "qwen36_codex": {"regex-log", "citation-check", "sales-pivot-analysis"},
-        "qwen36_kimi_cli": {"dm-csv-011"},
-        "deepseek_v4_kimi_cli": {"dm-csv-009", "pddl-tpp-planning", "virtualhome-agent-planning"},
-        "glm51_qwen_coder": {"dm-csv-009", "bash-script-debugger"},
+        "qwen36_kimi_cli": {"dm-csv-011", "bash-script-debugger"},
+        "deepseek_v4_kimi_cli": {
+            "dm-csv-009",
+            "pddl-tpp-planning",
+            "virtualhome-agent-planning",
+            "lru-cache-with-ttl",
+        },
+        "glm51_qwen_coder": {"dm-csv-009", "bash-script-debugger", "sales-pivot-analysis"},
     }
     assert {(p.parent.parent.name, p.parent.name) for p in descriptions} == {
         (source, task) for source, tasks in expected.items() for task in tasks
     }
-    assert len(descriptions) == 9
-    assert len({p.parent.name for p in descriptions}) == 8
+    assert len(descriptions) == 12
+    assert len({p.parent.name for p in descriptions}) == 9
     for optimized in descriptions:
         (task_dir,) = (ROOT / "benchmark_tasks").glob(f"*/{optimized.parent.name}")
         assert (

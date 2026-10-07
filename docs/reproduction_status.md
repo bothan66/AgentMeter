@@ -7,14 +7,14 @@ The `agentmeter` command and `python -m agentmeter` expose the same interface.
 |:--|:--|:--|
 | Recompute manuscript tables | `agentmeter tables` | Included 1,160 records and full-precision calibration |
 | Inspect reward/cost summaries | `agentmeter tables --descriptive` | The same archived observations |
-| Inspect the 9 released pairs | `agentmeter tables --examples` | Released descriptions and their archived results |
+| Inspect the 12 released pairs | `agentmeter tables --examples` | Released descriptions and their archived results |
 | Score one condition | `agentmeter score --runs condition.csv` | Task ID, frozen stratum, reward and USD cost |
 | Prepare pinned Harbor | `agentmeter setup` | Git, Python 3.12–3.13 and network access |
 | Replay a paired example | `agentmeter compare SOURCE CONDITION TASK` | Harbor, Docker and provider credentials |
 | Run a frozen task list | `agentmeter suite TASK_LIST` | Matching task checkout and target configuration |
 | Construct a description | `agentmeter optimize --help` | Source task, trajectory and reflection API |
 
-The release contains 16 executable tasks and 9 selected description pairs
+The release contains 16 executable tasks and 12 selected description pairs
 covering all four source configurations. Archived scoring covers all 840 Core30 and 320 Final16
 observations, including the 192 Cross outcomes.
 
