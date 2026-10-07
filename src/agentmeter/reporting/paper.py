@@ -108,14 +108,15 @@ def example_table(rows, repository=None):
         if r["dataset"] == "final16" and r["condition"] in {"Original", "Self"}
     }
     lines = [
-        "| Source pair / task | Reward: Original → Self | USD: Original → Self | Cost change |",
+        "| Task / source pair | Reward: Original → Self | USD: Original → Self | Cost change |",
         "|:--|--:|--:|--:|",
     ]
     root = find_repository(repository)
     for path in sorted(
         (root / "artifacts/agentmeter_opt_final16/descriptions").glob(
             "*/*/optimized_instruction.md"
-        )
+        ),
+        key=lambda path: (path.parent.name, path.parent.parent.name),
     ):
         source, task = path.parent.parent.name, path.parent.name
         before, after = (index[(source, task, c)] for c in ["Original", "Self"])
@@ -123,7 +124,7 @@ def example_table(rows, repository=None):
         change = f"{100 * (a / b - 1):+.1f}%" if b else "N/A"
         link = f"descriptions/{source}/{task}/"
         lines.append(
-            f"| [{source} / {task}]({link}) | {float(before['reward']):.3f} → {float(after['reward']):.3f} | {b:.5f} → {a:.5f} | {change} |"
+            f"| [{task} / {source}]({link}) | {float(before['reward']):.3f} → {float(after['reward']):.3f} | {b:.5f} → {a:.5f} | {change} |"
         )
     return "\n".join(lines)
 

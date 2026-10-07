@@ -113,8 +113,9 @@ select a different best description for each target.
 ## Reproduce
 
 The release includes **1,160 run records**, frozen task lists and calibration,
-**16 executable tasks**, and **12 selected description pairs** from the
-64-description study. Core30/Full80 execution uses a separate task checkout.
+**16 executable tasks**, and a **complete four-source description group**
+for `dm-csv-009` from the 64-description study. Core30/Full80 execution uses
+a separate task checkout.
 [Reproduction scope](docs/reproduction_status.md)
 
 ### 1. Install and recompute the paper tables
@@ -135,11 +136,11 @@ agentmeter tables --descriptive
 
 This recomputes all 28 Core30 rows and the description-condition results
 from the archived observations. No API or Docker is needed. Use
-`agentmeter tables --examples` for the 12 released Original/Self pairs.
+`agentmeter tables --examples` for all four released Original/Self pairs.
 
 ### 2. Run an Original/optimized comparison
 
-The example uses the paper's **Qwen3.6-Plus × Codex CLI** pair on `regex-log`.
+The example uses the paper's **Qwen3.6-Plus × Codex CLI** pair on `dm-csv-009`.
 Live execution requires Docker, provider credentials, and network access for
 images and dependencies. Provider calls incur charges.
 
@@ -170,9 +171,9 @@ pins the released execution recipe, not every historical paper run.
 
 ```bash
 agentmeter probe
-agentmeter compare qwen36_codex original regex-log --dry-run
-agentmeter compare qwen36_codex original regex-log
-agentmeter compare qwen36_codex optimized regex-log
+agentmeter compare qwen36_codex original dm-csv-009 --dry-run
+agentmeter compare qwen36_codex original dm-csv-009
+agentmeter compare qwen36_codex optimized dm-csv-009
 ```
 
 The positional pair selects the **description source**; the configured model
@@ -195,28 +196,26 @@ external task directories and validation.
 
 ## A description adaptation
 
-**`regex-log` · Qwen3.6-Plus × Codex CLI**
+**One task, all four sources: `dm-csv-009` (author rankings)**
 
-> **Original:** Save your regex in `/app/regex.txt`.
->
-> **Rewrite:** Save your regex in `/app/regex.txt`. The file must contain only
-> the raw regex string, with no extra text, markdown, or explanations.
+The Original asks for three top-10 author rankings using `guidance.txt` and
+the `sample_result.csv` format. All four rewrites retain those requirements:
+they clarify public file paths, ranking rules or template fields. The
+ranking guidance, data and output template are included with the task.
 
-The Original's public Python example reads the file directly as a pattern.
-The rewrite makes that output-file contract explicit.
-
-| Archived condition | Reward | Cost (USD) | Billable-component tokens |
+| Description source | Reward: Original → Self | USD: Original → Self | Cost change |
 |:--|--:|--:|--:|
-| Original | 1.0 | 0.02238 | 67,380 |
-| Self rewrite | 1.0 | 0.01726 | 59,868 |
+| DeepSeek-V4-Pro × Kimi | 0.333 → 0.333 | 0.04906 → 0.04318 | -12.0% |
+| GLM-5.1 × Qwen | 0.333 → 0.333 | 0.05093 → 0.03515 | -31.0% |
+| Qwen3.6-Plus × Codex | 0.000 → 0.333 | 0.00540 → 0.01142 | +111.4% |
+| Qwen3.6-Plus × Kimi | 0.333 → 0.333 | 0.03301 → 0.01409 | -57.3% |
 
-This historical pair preserves reward while reducing recorded cost by **22.9%**.
-The 12 selected examples cover 9 tasks and all four source configurations.
-They illustrate interface behavior, public schemas and completion conditions;
-each retains the original benchmark instruction and the evaluated rewrite.
+Publication is task-level: all four historical rewrites and their outcomes
+are shown together, including the cost increase. Rewards here are partial,
+not full passes. These observations illustrate adaptations; the paper's
+aggregate results use the complete study, not this example group.
 
-[Read this pair](artifacts/agentmeter_opt_final16/descriptions/qwen36_codex/regex-log/) ·
-[Browse all 12 pairs and results](artifacts/agentmeter_opt_final16/README.md) ·
+[Read all four rewrites and results](artifacts/agentmeter_opt_final16/README.md) ·
 [Interpretation and public evidence](docs/description_notes.md)
 
 ## Code map

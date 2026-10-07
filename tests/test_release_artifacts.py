@@ -66,22 +66,19 @@ def test_frozen_selections_and_descriptions():
             "*/*/optimized_instruction.md"
         )
     )
-    expected = {
-        "qwen36_codex": {"regex-log", "citation-check", "sales-pivot-analysis"},
-        "qwen36_kimi_cli": {"dm-csv-011", "bash-script-debugger"},
-        "deepseek_v4_kimi_cli": {
-            "dm-csv-009",
-            "pddl-tpp-planning",
-            "virtualhome-agent-planning",
-            "lru-cache-with-ttl",
-        },
-        "glm51_qwen_coder": {"dm-csv-009", "bash-script-debugger", "sales-pivot-analysis"},
+    sources = {
+        "qwen36_codex",
+        "qwen36_kimi_cli",
+        "deepseek_v4_kimi_cli",
+        "glm51_qwen_coder",
     }
     assert {(p.parent.parent.name, p.parent.name) for p in descriptions} == {
-        (source, task) for source, tasks in expected.items() for task in tasks
+        (source, "dm-csv-009") for source in sources
     }
-    assert len(descriptions) == 12
-    assert len({p.parent.name for p in descriptions}) == 9
+    assert len(descriptions) == 4
+    # Publication is task-complete: no source is dropped for its outcome.
+    for task in {p.parent.name for p in descriptions}:
+        assert {p.parent.parent.name for p in descriptions if p.parent.name == task} == sources
     for optimized in descriptions:
         (task_dir,) = (ROOT / "benchmark_tasks").glob(f"*/{optimized.parent.name}")
         assert (

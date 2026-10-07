@@ -32,9 +32,9 @@ tasks/<task-id>/
 Run a released instruction pair:
 
 ```bash
-agentmeter compare qwen36_codex original regex-log --dry-run
-agentmeter compare qwen36_codex original regex-log
-agentmeter compare qwen36_codex optimized regex-log
+agentmeter compare qwen36_codex original dm-csv-009 --dry-run
+agentmeter compare qwen36_codex original dm-csv-009
+agentmeter compare qwen36_codex optimized dm-csv-009
 ```
 
 Run a frozen list with `agentmeter suite configs/task_lists/core30.public.txt`

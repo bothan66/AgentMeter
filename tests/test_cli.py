@@ -34,8 +34,8 @@ def test_tables_use_explicit_checkout_from_another_directory(tmp_path, monkeypat
     monkeypatch.chdir(tmp_path)
     assert main(["tables", "--repository", str(checkout), "--examples"]) == 0
     table = capsys.readouterr().out
-    assert len(table.strip().splitlines()) == 14
-    assert "qwen36_codex / regex-log" in table
+    assert len(table.strip().splitlines()) == 6
+    assert "dm-csv-009 / qwen36_codex" in table
 
 
 def test_bad_explicit_checkout_does_not_fall_back(tmp_path, capsys):

@@ -82,9 +82,9 @@ Cross-only and the shared, equal-weight Pooled set test beyond source matching.
   task and sharing it across targets; not 10,000 new API experiments.
 
 Generic records/descriptions and an executable Adapted-1 reconstruction are
-not included in this compact release. The selected 12 description examples
-are a subset of the 64 constructed variants, not the full 16-task × 4-source
-grid. Do not confuse this showcase with the complete study.
+not included in this compact release. The description showcase contains all
+four source variants for `dm-csv-009`, a task-complete subset of the 64
+constructed variants, not the full 16-task × 4-source grid.
 
 The construction model is Qwen3.7-Max. Evaluation harness names are Claude
 Code, Codex CLI, Kimi Code CLI, and Qwen Code. A GLM-5.3-Flash smoke run is a

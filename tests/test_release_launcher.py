@@ -33,7 +33,9 @@ def test_unreleased_description_fails_before_execution(tmp_path):
 
 def test_comparison_preserves_snapshot_and_refuses_overwrite(tmp_path, monkeypatch):
     jobs = tmp_path / "jobs with spaces"
-    plan = plan_comparison(ROOT, "qwen36_codex", "optimized", ["regex-log"], OPTIONS, jobs_dir=jobs)
+    plan = plan_comparison(
+        ROOT, "qwen36_codex", "optimized", ["dm-csv-009"], OPTIONS, jobs_dir=jobs
+    )
     calls = []
 
     def mock_harbor(command, *, check):
@@ -49,7 +51,7 @@ def test_comparison_preserves_snapshot_and_refuses_overwrite(tmp_path, monkeypat
             "/bin/true",
             "run",
             "-p",
-            str(jobs / "task_snapshots/regex-log"),
+            str(jobs / "task_snapshots/dm-csv-009"),
             "-a",
             "codex",
             "-m",
@@ -63,7 +65,7 @@ def test_comparison_preserves_snapshot_and_refuses_overwrite(tmp_path, monkeypat
             "-n",
             "1",
             "--job-name",
-            "final16_regex-log_qwen36_codex_optimized",
+            "final16_dm-csv-009_qwen36_codex_optimized",
             "--jobs-dir",
             str(jobs),
         ]
@@ -221,7 +223,7 @@ def test_cli_dry_run_does_not_create_jobs_or_require_harbor(tmp_path):
             "compare",
             "qwen36_codex",
             "optimized",
-            "regex-log",
+            "dm-csv-009",
             "--model",
             "model",
             "--agent",
@@ -239,7 +241,7 @@ def test_cli_dry_run_does_not_create_jobs_or_require_harbor(tmp_path):
         env=cli_environment(),
     )
     assert result.returncode == 0, result.stderr
-    assert "--job-name final16_regex-log_qwen36_codex_optimized" in result.stdout
+    assert "--job-name final16_dm-csv-009_qwen36_codex_optimized" in result.stdout
     assert "optimized_instruction.md" in result.stdout
     assert "--agent-setup-timeout-multiplier 3.0" in result.stdout
     assert not (tmp_path / "jobs").exists()
