@@ -1,6 +1,6 @@
 # Reading the four-source task groups
 
-The release includes four tasks, each with all four historical rewrites and
+The release includes seven tasks, each with all four historical rewrites and
 paired outcomes. See the
 [example catalog](../artifacts/agentmeter_opt_final16/README.md) for the exact
 instructions, archived reward/cost records and replay commands.
@@ -89,6 +89,73 @@ do not list recovered cell answers. All four retain numeric recovery and the
 output filename. Their guidance differs on post-save verification, which
 is an execution-policy difference rather than a different missing-value
 recovery target.
+
+## csv-data-validator
+
+The [Original](../benchmark_tasks/terminal_bench/csv-data-validator/instruction.md)
+specifies five validation rules: integer/unique employee IDs, an email pattern,
+exclusive salary bounds, the date format/cutoff and valid manager references.
+It requires writing and running `/app/validate.py`, then producing a JSON
+report with one entry per error and 1-based data-row indices. The public
+[environment generator](../benchmark_tasks/terminal_bench/csv-data-validator/environment/generate_data.py)
+creates the input CSV.
+
+| Source | Adaptation | Execution guidance |
+|:--|:--|:--|
+| DeepSeek × Kimi | Separates validation rules, script requirements and report schema. | Stop after execution/report generation; do not read back or manually verify the report. |
+| GLM × Qwen | Retains the rules and requires programmatic CSV processing. | Do not inspect the CSV directly or print/summarize input/output contents. |
+| Qwen × Codex | Organizes write/run steps and explains error-object fields. | Stop after successful execution and report creation without reading/printing the report. |
+| Qwen × Kimi | Organizes the same rules and specifies original invalid values as strings. | Stop after report creation without reading or verifying the output. |
+
+All four retain the five validation rules and require executing the script.
+The numeric JSON examples originate in Original; they are not newly supplied
+answers. Direct-inspection/readback restrictions are added workflow constraints,
+not requirements already present in Original. The paired outcomes therefore
+measure schema clarification and execution policy together.
+
+## pddl-tpp-planning
+
+The [Original](../benchmark_tasks/skillsbench/pddl-tpp-planning/instruction.md)
+requires a valid plan for every entry in
+[`problem.json`](../benchmark_tasks/skillsbench/pddl-tpp-planning/environment/problem.json),
+using the specified domain/problem inputs and `plan_output` destination.
+It gives an action-per-line example and requires matching action/object names.
+
+| Source | Adaptation | Execution guidance |
+|:--|:--|:--|
+| DeepSeek × Kimi | Separates inputs, plan generation and action formatting; explicitly excludes metadata. | Completion requires valid, correctly formatted plans for all entries. |
+| GLM × Qwen | Explains types, predicates, initial/goal states and action schemas; retains the same output paths. | Allows logical analysis or available planning libraries. |
+| Qwen × Codex | Groups output formatting and all-entry completion requirements. | No further validation loops or test executions are required after writing the plans. |
+| Qwen × Kimi | Emphasizes action names, parameter types/order and achievement of the goal state. | Move to the next entry after writing; do not read back or verify output files. |
+
+The planning domains, problem goals and requirement to solve every entry are
+unchanged. Formatting and post-write validation policies differ; the text does
+not provide a new solved plan. Action examples are carried over from Original.
+
+## virtualhome-agent-planning
+
+Despite the task ID, the
+[Original](../benchmark_tasks/skillsbench/virtualhome-agent-planning/instruction.md)
+describes airport PDDL planning. Its public
+[`problem.json`](../benchmark_tasks/skillsbench/virtualhome-agent-planning/environment/problem.json)
+specifies domain/problem files and one output plan per entry. The environment
+installs `unified_planning` and Pyperplan, and the supplied
+[save-plan utility](../benchmark_tasks/skillsbench/virtualhome-agent-planning/environment/skills/pddl-skills/save_plan.skill)
+uses `PDDLWriter.write_plan`.
+
+| Source | Adaptation | Execution guidance |
+|:--|:--|:--|
+| DeepSeek × Kimi | Makes one-action-per-line, no-prefix formatting and all-entry completion explicit. | Retains valid-plan generation without prescribing a specific planner. |
+| GLM × Qwen | Directs the agent to planning libraries or available skills; explicitly permits standard parenthesized plans. | Prefers standard planner serialization. |
+| Qwen × Codex | Groups inputs, raw-action output and completion requirements. | Stop after saving the final plan; no further validation loops or readback. |
+| Qwen × Kimi | Favors CLI planners or provided skills and permits standard parenthesized plans. | Advises against custom planning-library API scripts. |
+
+All four retain the same problem instances, goals and output paths. The
+library/CLI choice and serialization guidance can affect the trajectory:
+they are method-level interventions, not pure paraphrases. The library and
+skill route has a public environment basis; planner names given as examples
+do not establish that every named planner is installed. No new airport plans
+or goal-state answers are supplied.
 
 ## Interpreting the results
 
