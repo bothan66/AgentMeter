@@ -72,10 +72,16 @@ def test_frozen_selections_and_descriptions():
         "deepseek_v4_kimi_cli",
         "glm51_qwen_coder",
     }
-    assert {(p.parent.parent.name, p.parent.name) for p in descriptions} == {
-        (source, "dm-csv-009") for source in sources
+    tasks = {
+        "dm-csv-009",
+        "citation-check",
+        "markdown-table-generator",
+        "xlsx-recover-data",
     }
-    assert len(descriptions) == 4
+    assert {(p.parent.parent.name, p.parent.name) for p in descriptions} == {
+        (source, task) for source in sources for task in tasks
+    }
+    assert len(descriptions) == 16
     # Publication is task-complete: no source is dropped for its outcome.
     for task in {p.parent.name for p in descriptions}:
         assert {p.parent.parent.name for p in descriptions if p.parent.name == task} == sources

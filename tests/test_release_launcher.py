@@ -24,7 +24,7 @@ def test_unreleased_description_fails_before_execution(tmp_path):
             ROOT,
             "qwen36_codex",
             "optimized",
-            ["xlsx-recover-data"],
+            ["lru-cache-with-ttl"],
             OPTIONS,
             jobs_dir=tmp_path / "jobs",
         )
@@ -75,13 +75,16 @@ def test_comparison_preserves_snapshot_and_refuses_overwrite(tmp_path, monkeypat
     assert len(calls) == 1
 
 
-def test_default_conditions_use_same_released_tasks(tmp_path):
+@pytest.mark.parametrize(
+    "source", ["qwen36_codex", "qwen36_kimi_cli", "deepseek_v4_kimi_cli", "glm51_qwen_coder"]
+)
+def test_default_conditions_use_same_released_tasks(tmp_path, source):
     plans = [
-        plan_comparison(ROOT, "qwen36_codex", variant, [], OPTIONS, jobs_dir=tmp_path / variant)
+        plan_comparison(ROOT, source, variant, [], OPTIONS, jobs_dir=tmp_path / variant)
         for variant in ("original", "optimized")
     ]
     selected = [{task.task_id for task in plan.tasks} for plan in plans]
-    descriptions = ROOT / "artifacts/agentmeter_opt_final16/descriptions/qwen36_codex"
+    descriptions = ROOT / "artifacts/agentmeter_opt_final16/descriptions" / source
     assert (
         selected[0]
         == selected[1]

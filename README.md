@@ -113,8 +113,8 @@ select a different best description for each target.
 ## Reproduce
 
 The release includes **1,160 run records**, frozen task lists and calibration,
-**16 executable tasks**, and a **complete four-source description group**
-for `dm-csv-009` from the 64-description study. Core30/Full80 execution uses
+**16 executable tasks**, and **four complete task groups × four source rewrites**
+from the 64-description study. Core30/Full80 execution uses
 a separate task checkout.
 [Reproduction scope](docs/reproduction_status.md)
 
@@ -136,7 +136,7 @@ agentmeter tables --descriptive
 
 This recomputes all 28 Core30 rows and the description-condition results
 from the archived observations. No API or Docker is needed. Use
-`agentmeter tables --examples` for all four released Original/Self pairs.
+`agentmeter tables --examples` for all 16 released Original/Self pairs.
 
 ### 2. Run an Original/optimized comparison
 
@@ -196,6 +196,19 @@ external task directories and validation.
 
 ## A description adaptation
 
+**Four tasks, with all four source rewrites for each.**
+
+| Task | Adaptation focus | Released coverage |
+|:--|:--|:--|
+| `dm-csv-009` | Public ranking guidance, file paths and CSV schema | 4/4 sources |
+| `citation-check` | Bibliography verification, title cleaning and JSON output | 4/4 sources |
+| `markdown-table-generator` | Sales aggregation, section layout and numeric presentation | 4/4 sources |
+| `xlsx-recover-data` | Cross-sheet relationships, numeric recovery and workbook preservation | 4/4 sources |
+
+The groups retain their evaluated wording, including source-specific
+formatting and completion directives; they are not uniformly paraphrase-only
+edits. [Inspect every version](artifacts/agentmeter_opt_final16/README.md).
+
 **One task, all four sources: `dm-csv-009` (author rankings)**
 
 The Original asks for three top-10 author rankings using `guidance.txt` and
@@ -213,9 +226,9 @@ ranking guidance, data and output template are included with the task.
 Publication is task-level: all four historical rewrites and their outcomes
 are shown together, including the cost increase. Rewards here are partial,
 not full passes. These observations illustrate adaptations; the paper's
-aggregate results use the complete study, not this example group.
+aggregate results use the complete study, not the four example groups.
 
-[Read all four rewrites and results](artifacts/agentmeter_opt_final16/README.md) ·
+[Read all 16 rewrites and results](artifacts/agentmeter_opt_final16/README.md) ·
 [Interpretation and public evidence](docs/description_notes.md)
 
 ## Code map
