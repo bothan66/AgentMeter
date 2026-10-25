@@ -203,7 +203,7 @@ external task directories and validation.
 ## A description adaptation
 
 <p align="center">
-  <img src="docs/assets/agentmeter_opt_pipeline.png" width="1000" alt="AgentMeter-Opt uses public requirements and source trajectories to construct descriptions, screens task preservation, and evaluates all target pairs on a shared description set.">
+  <img src="docs/assets/agentmeter_opt_pipeline.png" width="100%" alt="AgentMeter-Opt uses public requirements and source trajectories to construct descriptions, screens task preservation, and evaluates all target pairs on a shared description set.">
 </p>
 
 **Four tasks, with all four source rewrites for each.**
