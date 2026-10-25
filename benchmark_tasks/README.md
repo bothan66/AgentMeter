@@ -14,8 +14,8 @@ For the seven SkillsBench tasks, prepare the files listed in the
 | `da_code/` | DA-Code-compatible collection | 3 |
 
 The files are included for experiment reproducibility. AgentMeter does not
-claim authorship of upstream task content. Consult the corresponding upstream
-benchmark licenses before redistributing a derived task independently.
+claim authorship of upstream task content. [Sources and adaptations](SOURCES.md)
+identify upstream revisions and the retained family-specific licenses.
 
 Optimized descriptions are stored separately under
 `artifacts/agentmeter_opt_final16/descriptions/`; the immutable task bundles

@@ -1,3 +1,4 @@
+# Modified by AgentMeter for runtime compatibility; see benchmark_tasks/SOURCES.md.
 FROM ubuntu:24.04
 
 # Install or copy over any environment dependencies here.

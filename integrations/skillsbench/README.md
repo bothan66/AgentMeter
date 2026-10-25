@@ -15,9 +15,9 @@ export AGENTMETER_TASK_ROOT=/path/to/external/skillsbench/tasks
 agentmeter suite configs/task_lists/core30.public.txt --dry-run
 ```
 
-The upstream URL and reference checkout commit are recorded in
-`integrations/agentmeter_runtime.lock.json`; this is not a verified file-level
-pin for the historical skills. AgentMeter does not download that task tree.
+The upstream URL and verified skill source commit are recorded in
+`integrations/agentmeter_runtime.lock.json` and the skill manifest.
+AgentMeter does not download that task tree.
 All released Final16 examples use the bundled task directories.
 
 Expected task layout:

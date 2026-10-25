@@ -23,6 +23,8 @@ collection. The machine-readable [manifest](skills_manifest.json) lists all
 ## Prepare for execution
 
 Obtain the matching dependencies separately under their applicable terms.
+The verified source revision is
+[`be06b4995c75b384b9295b94d18a4531400bb821`](https://github.com/benchflow-ai/skillsbench/tree/be06b4995c75b384b9295b94d18a4531400bb821/tasks).
 From the AgentMeter checkout, point the helper to your source task collection:
 
 ```bash
@@ -38,9 +40,8 @@ not download, execute, translate, or replace skill content. The Harbor launcher
 checks these dependencies before creating runs; missing skills are not silently
 treated as a no-skill condition. A dry run only previews the execution plan.
 
-The exact upstream commit corresponding to these historical skill files has
-not been verified. The runtime lock's SkillsBench revision is a reference,
-not a verified pin for these files; the recorded hashes identify their contents.
+All 33 files were checked against the Git blobs at the recorded upstream commit.
+The runtime lock and skill manifest use the same SkillsBench revision.
 A different upstream version must not be substituted silently in a historical
 replay. Identically named skills in different task directories can differ.
 

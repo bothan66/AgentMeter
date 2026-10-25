@@ -83,10 +83,11 @@ Task environments and verifiers remain unchanged.
 | `terminal_bench` | csv-data-validator | Local Terminal-Bench-compatible collection |
 | `skillsbench` | citation-check, econ-detrending-correlation | [SkillsBench](https://github.com/benchflow-ai/skillsbench) |
 
-Collection names are not claims of exact upstream snapshots. Original content
-and retained material in rewrites keep their applicable upstream terms.
-See [third-party notices](../../THIRD_PARTY_NOTICES.md); selection for this
-showcase does not resolve the terms of other bundled task materials.
+Original content and retained material in rewrites keep their applicable
+upstream terms. [Benchmark sources and adaptations](../../benchmark_tasks/SOURCES.md)
+record the available source revisions and distinguish local compatible
+snapshots from upstream originals. License copies are included by task family;
+see [third-party notices](../../THIRD_PARTY_NOTICES.md).
 
 ## Run an example
 

@@ -1,3 +1,4 @@
+# Modified by AgentMeter for runtime compatibility; see benchmark_tasks/SOURCES.md.
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive

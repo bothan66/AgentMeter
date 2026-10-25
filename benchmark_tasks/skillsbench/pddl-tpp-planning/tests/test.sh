@@ -1,4 +1,5 @@
 #!/bin/bash
+# Modified by AgentMeter for runtime compatibility; see benchmark_tasks/SOURCES.md.
 
 # Use this file to install test dependencies and run the tests.
 # It will be copied to /tests/test.sh and run from the working directory.

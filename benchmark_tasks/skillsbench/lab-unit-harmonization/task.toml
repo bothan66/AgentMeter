@@ -1,3 +1,4 @@
+# Modified by AgentMeter for runtime compatibility; see benchmark_tasks/SOURCES.md.
 version = "1.0"
 
 [metadata]

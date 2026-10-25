@@ -1,6 +1,7 @@
 """Check that released selections and description combinations are executable inputs."""
 
 import csv
+import json
 import shlex
 import subprocess
 from pathlib import Path
@@ -8,6 +9,19 @@ from pathlib import Path
 from agentmeter.runtime.skills import load_skill_manifest
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_source_licenses_and_skill_revision_are_recorded():
+    for family, license_name in (
+        ("skillsbench", "Apache License"),
+        ("terminal_bench", "Apache License"),
+        ("da_code", "MIT License"),
+    ):
+        assert license_name in (ROOT / "benchmark_tasks" / family / "LICENSE").read_text()
+    manifest = json.loads((ROOT / "integrations/skillsbench/skills_manifest.json").read_text())
+    lock = json.loads((ROOT / "integrations/agentmeter_runtime.lock.json").read_text())
+    assert manifest["upstream_commit"] == lock["skillsbench"]["commit"]
+    assert len(manifest["upstream_commit"]) == 40
 
 
 def test_dockerfile_local_inputs_are_included():
