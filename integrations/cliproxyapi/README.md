@@ -45,8 +45,7 @@ refuses to overwrite an existing config. YAML `${...}` placeholders are
 not assumed to expand automatically. Bind to a trusted interface reachable
 from the task containers; requests require the configured client key.
 Generated configs, `.env` files, OAuth data, logs, and compiled binaries are
-ignored by Git. Before committing, run `python tests/check_public_release.py`;
-the same high-confidence credential scan runs in CI.
+ignored by Git. Do not force-add these private runtime files to a commit.
 
 Repeat `--model CLIENT_ALIAS=UPSTREAM_ID` for additional models, for example
 `deepseek-v4-pro=YOUR_DS_ID`, `glm-5.1=YOUR_GLM_ID`, or

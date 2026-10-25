@@ -107,14 +107,11 @@ for the two conditions if setting `AGENTMETER_JOBS_DIR` explicitly.
 
 ## Historical results
 
-`results/self_summary.csv` contains full-study Original/Self aggregates.
-`results/cross_task_results.csv` contains 192 Cross outcomes, filterable by
-task and source; `results/cross_summary.csv` contains pair aggregates.
-These are not results on this showcase alone. Per-example Self outcomes
-are available in the [run-level scoring records](../scoring/README.md).
+The [run-level scoring records](../scoring/README.md) contain all 64 Original,
+64 Self and 192 Cross observations, filterable by task, source and target.
+These cover the complete Final16 grid, not just this showcase.
 
 Run `agentmeter tables --descriptive` for descriptive summaries
 and `agentmeter tables` for AMS. Both read the same run-level USD inputs,
-without changing historical accounting. The CNY files in `results/` remain
-unchanged as legacy source tables; their `AgentMeterScore` field is not
-manuscript AMS. Full optimized-grid replay requires the remaining descriptions.
+without changing historical accounting. Full optimized-grid replay requires
+the remaining descriptions.

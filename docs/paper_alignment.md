@@ -28,8 +28,7 @@ and duplicate task IDs are rejected. The CLI does not define a repeated-run
 aggregation policy or compute Pooled automatically.
 
 The default `configs/paper_calibration_full_precision.json` preserves the
-archived USD budgets and thresholds. `configs/paper_calibration.json` remains
-the rounded supplementary-table transcription for comparison only.
+archived USD budgets and thresholds at full precision.
 `artifacts/scoring/run_metrics.csv` includes the frozen effort strata and
 run-level inputs for 840 Core30 and 320 Final16 observations.
 
@@ -48,19 +47,15 @@ The implementation is [`agentmeter.metrics.paper`](../src/agentmeter/metrics/pap
 ## Currency and archived scores
 
 Both table views use archived `cost_usd` without repricing. The
-historical conversion is 1 / 6.7972 USD/CNY, approximately 0.1471. Legacy CSVs
-retain original CNY fields; manually using the rounded rate can change the
-last displayed decimal. This is historical accounting, not current pricing.
+historical conversion is 1 / 6.7972 USD/CNY, approximately 0.1471.
+This is historical accounting, not current pricing.
 The original model-rate snapshot is included unchanged in
 [`paper_model_pricing.json`](../configs/paper_model_pricing.json); table
 reproduction still reads recorded per-run costs rather than repricing tokens.
 
-self_summary.csv's AgentMeterScore is an archived legacy field, not the
-manuscript score; it must not be relabeled as AMS. The table command
-omits it. For example, GLM Original totals USD 3.37084 in the archived
-run-level records, rounding to the paper's 3.371. Re-converting the legacy
-CNY aggregate at the rounded 0.1471 rate instead yields 3.370 at three
-decimals; the unified table views avoid that second conversion.
+For example, GLM Original totals USD 3.37084 in the archived run-level
+records, rounding to the paper's 3.371. Using recorded USD costs avoids a
+second conversion at a rounded exchange rate.
 
 ## Conditions and counts
 

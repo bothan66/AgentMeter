@@ -32,8 +32,7 @@ agentmeter tables --examples
 
 These commands use archived `cost_usd` and full-precision calibration without
 repricing. The main table reproduces all 28 Core30 rows and the four targets'
-Original/Pooled/Cross AMS at manuscript precision. The historical
-`AgentMeterScore` field in legacy CSVs is distinct from manuscript AMS.
+Original/Pooled/Cross AMS at manuscript precision.
 See [scoring inputs](../artifacts/scoring/README.md) and
 [condition definitions](paper_alignment.md).
 
@@ -108,7 +107,6 @@ python -m pip install -e '.[dev]'
 ruff check src/agentmeter tests
 ruff format --check src/agentmeter tests
 pytest -q
-python tests/check_public_release.py
 ```
 
 CI checks package installation outside the source directory, table

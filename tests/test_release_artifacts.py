@@ -120,8 +120,10 @@ def test_frozen_selections_and_descriptions():
 
 
 def test_cross_grid_is_complete_and_unique():
-    with (ROOT / "artifacts/agentmeter_opt_final16/results/cross_task_results.csv").open() as f:
-        rows = list(csv.DictReader(f))
-    keys = [(r["task_id"], r["source_combo"], r["target_combo"]) for r in rows]
+    with (ROOT / "artifacts/scoring/run_metrics.csv").open() as f:
+        rows = [
+            r for r in csv.DictReader(f) if r["dataset"] == "final16" and r["condition"] == "Cross"
+        ]
+    keys = [(r["task_id"], r["source"], r["target"]) for r in rows]
     assert len(keys) == len(set(keys)) == 192
     assert all(source != target for _, source, target in keys)
