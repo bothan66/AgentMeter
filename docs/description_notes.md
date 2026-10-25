@@ -1,11 +1,19 @@
 # Reading the four-source task groups
 
-The release includes seven tasks, each with all four historical rewrites and
-paired outcomes. See the
-[example catalog](../artifacts/agentmeter_opt_final16/README.md) for the exact
-instructions, archived reward/cost records and replay commands.
-Task requirements and execution directives are distinguished below.
-The evaluated files are preserved byte-for-byte, not edited for presentation.
+The showcase contains four tasks, each with all four historical source
+rewrites and paired outcomes. They illustrate public artifact interpretation,
+output contracts and completion guidance across ranking, bibliography,
+validation and time-series analysis.
+See the [example catalog](../artifacts/agentmeter_opt_final16/README.md)
+for every version, result and replay command.
+
+Tasks are selected by inspecting all four rewrites against the public
+instruction and supplied artifacts, rather than by the size of a reward or
+cost improvement. The selection favors inspectable file/schema clarifications
+and existing task procedures over new solver choices or conflicting output
+conventions. It is an illustrative subset, not a new evaluation set.
+Historical rewrite wording is preserved; newly included text files receive
+a final newline. No evaluated instruction is rewritten for presentation.
 
 ## dm-csv-009
 
@@ -44,52 +52,6 @@ The fake-citation identification target and output content remain the same.
 The post-write directives are added execution guidance, not statements copied
 from the Original; their effect is part of the full rewrite intervention.
 
-## markdown-table-generator
-
-The [Original](../benchmark_tasks/terminal_bench/markdown-table-generator/instruction.md)
-requires a grand sales total, every CSV row sorted by total descending, and
-the top region/product by aggregate sales. It supplies three section headings,
-seven table columns and currency examples for the summary/top performers.
-The public environment
-[generates the sales CSV](../benchmark_tasks/terminal_bench/markdown-table-generator/environment/generate_data.py).
-
-| Source | Adaptation |
-|:--|:--|
-| DeepSeek × Kimi | Moves directory creation next to the output path and adds a completion sentence. |
-| GLM × Qwen | Presents a three-section layout, currency formatting for summary/top performers, and no text outside the sections. |
-| Qwen × Codex | Makes section formats explicit and asks for table numbers in their original CSV representation. |
-| Qwen × Kimi | Uses the three-section layout and formats all table numbers as currency. |
-
-The aggregate calculations, rows, sorting and winners are retained.
-Original does not prescribe the numeric display format of table cells.
-The Codex and Kimi versions choose different presentations, and some versions
-restrict extra sections; these are explicit format refinements, not identical
-wording or identical output-format constraints. The illustrative total and
-top-performer examples are carried over from Original, not newly supplied
-task answers.
-
-## xlsx-recover-data
-
-The [Original](../benchmark_tasks/skillsbench/xlsx-recover-data/instruction.md)
-asks to replace each `???` in
-[`nasa_budget_incomplete.xlsx`](../benchmark_tasks/skillsbench/xlsx-recover-data/environment/nasa_budget_incomplete.xlsx)
-with a computed numeric value using relationships between sheets, then save
-`nasa_budget_recovered.xlsx`. The input workbook contains Budget by
-Directorate, YoY Changes, Directorate Shares and Growth Analysis sheets.
-
-| Source | Adaptation | Completion guidance |
-|:--|:--|:--|
-| DeepSeek × Kimi | Explains same-year directorate totals and year-over-year percentage changes; asks to preserve existing content and formatting. | Save the recovered workbook. |
-| GLM × Qwen | Emphasizes numeric cell types and preserving other cells, sheets and structure. | Save the named output. |
-| Qwen × Codex | Groups requirements, numeric replacements and workbook preservation; specifies the current working directory. | Finish after saving a valid workbook with no placeholders; no additional verification is required. |
-| Qwen × Kimi | Names cross-sheet relationship types and asks to match surrounding numeric types/percentage scales. | Verify that no placeholders remain. |
-
-The relationship types are inspectable in the input workbook; the rewrites
-do not list recovered cell answers. All four retain numeric recovery and the
-output filename. Their guidance differs on post-save verification, which
-is an execution-policy difference rather than a different missing-value
-recovery target.
-
 ## csv-data-validator
 
 The [Original](../benchmark_tasks/terminal_bench/csv-data-validator/instruction.md)
@@ -113,59 +75,41 @@ answers. Direct-inspection/readback restrictions are added workflow constraints,
 not requirements already present in Original. The paired outcomes therefore
 measure schema clarification and execution policy together.
 
-## pddl-tpp-planning
+## econ-detrending-correlation
 
-The [Original](../benchmark_tasks/skillsbench/pddl-tpp-planning/instruction.md)
-requires a valid plan for every entry in
-[`problem.json`](../benchmark_tasks/skillsbench/pddl-tpp-planning/environment/problem.json),
-using the specified domain/problem inputs and `plan_output` destination.
-It gives an action-per-line example and requires matching action/object names.
+The [Original](../benchmark_tasks/skillsbench/econ-detrending-correlation/instruction.md)
+already specifies the full calculation: use 1973–2024, average the available
+2024 quarters, deflate nominal PCE/PFI by CPI, take natural logarithms, apply
+the HP filter with lambda 100, and correlate the cyclical components.
+The deliverable is one number, rounded to five decimal places, in
+`/root/answer.txt`. The
+[input spreadsheets](../benchmark_tasks/skillsbench/econ-detrending-correlation/environment/)
+are included.
 
-| Source | Adaptation | Execution guidance |
+| Source | Adaptation | Completion guidance |
 |:--|:--|:--|
-| DeepSeek × Kimi | Separates inputs, plan generation and action formatting; explicitly excludes metadata. | Completion requires valid, correctly formatted plans for all entries. |
-| GLM × Qwen | Explains types, predicates, initial/goal states and action schemas; retains the same output paths. | Allows logical analysis or available planning libraries. |
-| Qwen × Codex | Groups output formatting and all-entry completion requirements. | No further validation loops or test executions are required after writing the plans. |
-| Qwen × Kimi | Emphasizes action names, parameter types/order and achievement of the goal state. | Move to the next entry after writing; do not read back or verify output files. |
+| DeepSeek × Kimi | Repeats the existing year range next to the annual-data extraction requirement. | Stop after writing the answer; no further verification or file reads. |
+| GLM × Qwen | Separates extraction, deflation, filtering, correlation and the single-number output into sections. | No further verification, testing or command loops after writing. |
+| Qwen × Codex | Adds descriptions of spreadsheet headers and year/quarter indexing; foregrounds the existing 2024 averaging rule. | Deliver the specified single-number output. |
+| Qwen × Kimi | Separates annual 1973–2023 rows from the available 2024 quarters and restates the existing calculation order. | Stop after writing; do not read the result back. |
 
-The planning domains, problem goals and requirement to solve every entry are
-unchanged. Formatting and post-write validation policies differ; the text does
-not provide a new solved plan. Action examples are carried over from Original.
-
-## virtualhome-agent-planning
-
-Despite the task ID, the
-[Original](../benchmark_tasks/skillsbench/virtualhome-agent-planning/instruction.md)
-describes airport PDDL planning. Its public
-[`problem.json`](../benchmark_tasks/skillsbench/virtualhome-agent-planning/environment/problem.json)
-specifies domain/problem files and one output plan per entry. The environment
-installs `unified_planning` and Pyperplan, and the supplied
-[save-plan utility](../benchmark_tasks/skillsbench/virtualhome-agent-planning/environment/skills/pddl-skills/save_plan.skill)
-uses `PDDLWriter.write_plan`.
-
-| Source | Adaptation | Execution guidance |
-|:--|:--|:--|
-| DeepSeek × Kimi | Makes one-action-per-line, no-prefix formatting and all-entry completion explicit. | Retains valid-plan generation without prescribing a specific planner. |
-| GLM × Qwen | Directs the agent to planning libraries or available skills; explicitly permits standard parenthesized plans. | Prefers standard planner serialization. |
-| Qwen × Codex | Groups inputs, raw-action output and completion requirements. | Stop after saving the final plan; no further validation loops or readback. |
-| Qwen × Kimi | Favors CLI planners or provided skills and permits standard parenthesized plans. | Advises against custom planning-library API scripts. |
-
-All four retain the same problem instances, goals and output paths. The
-library/CLI choice and serialization guidance can affect the trajectory:
-they are method-level interventions, not pure paraphrases. The library and
-skill route has a public environment basis; planner names given as examples
-do not establish that every named planner is installed. No new airport plans
-or goal-state answers are supplied.
+The analysis procedure, parameter and precision are already in Original;
+these are not new algorithm choices. The Codex variant's file-structure
+descriptions are source-specific parsing guidance, while the other variants
+also illustrate completion guidance. The numerical output example comes
+from Original and is not a newly supplied answer. Historical formatting,
+including the Kimi variant's trailing backtick, is retained.
 
 ## Interpreting the results
 
-Every task includes all four source-matched outcomes, with no source omitted
-for its reward or cost. The showcase contains full passes, partial rewards
-and unchanged zero rewards, as well as a cost increase. Savings at zero
-reward should not be interpreted as successful optimization.
+Every selected task includes all four source-matched outcomes, with no source
+omitted for its reward or cost. The showcase includes full passes, partial
+rewards, an unchanged zero reward and a cost increase. Lower cost at zero
+reward does not establish successful completion.
 
-Public grounding supports inspection of task preservation but is not by
-itself a proof of semantic equivalence. These examples retain the task targets;
-some add formatting or execution constraints. Paired outcomes measure each
-full historical rewrite, not the causal effect of an individual sentence.
-The full archived study supplies the paper's aggregate results.
+Completion directives are part of the intervention: these variants are not
+all pure paraphrases. Public grounding supports inspection but does not
+prove semantic equivalence, and a gate pass is not a substitute for review.
+The reported outcomes measure each complete historical rewrite, not the
+causal effect of an individual sentence. The full archived study, not this
+showcase selection, supplies the paper's aggregate results.

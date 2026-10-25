@@ -1,25 +1,23 @@
-# Seven tasks, four description sources
+# Four tasks, four description sources
 
-The release contains seven complete task groups: each includes the Original
-and all four historical source rewrites, with every paired outcome.
-The examples span CSV rankings and validation, bibliography checking,
-Markdown reporting, spreadsheet recovery and PDDL planning. Publication is task-level, not a selection of
-individual variants by reward or cost. All evaluated wording is retained.
+Each task includes its Original instruction, all four historical source
+rewrites, and every paired outcome. The selection illustrates public artifact
+interpretation, output contracts and completion guidance across four domains.
+It is made at the task level, not by choosing individual variants with
+favorable reward or cost.
 
 ## Task coverage
 
 | Task | Core requirement | Source coverage |
 |:--|:--|:--|
-| `dm-csv-009` | Three top-10 author rankings, following public guidance and the CSV template | 4/4 |
-| `citation-check` | Identify fake citations and return cleaned, alphabetically sorted titles in JSON | 4/4 |
-| `markdown-table-generator` | Report the sales total, all sorted rows and the top region/product | 4/4 |
-| `xlsx-recover-data` | Replace missing workbook values using cross-sheet relationships | 4/4 |
+| `dm-csv-009` | Three top-10 author rankings using public guidance and the CSV template | 4/4 |
+| `citation-check` | Identify fake citations and return cleaned, sorted titles in JSON | 4/4 |
 | `csv-data-validator` | Apply five validation rules and generate a JSON error report | 4/4 |
-| `pddl-tpp-planning` | Generate valid purchase-problem plans for every listed instance | 4/4 |
-| `virtualhome-agent-planning` | Generate valid airport plans using the specified domains/problems | 4/4 |
+| `econ-detrending-correlation` | Apply the specified annual-series analysis and report one correlation | 4/4 |
 
-These 28 variants are an illustrative subset of the 64-description study.
-The full archived result grid, not this subset, supplies the paper tables.
+These 16 variants are an illustrative subset of the 64-description study.
+The complete archived result grid supplies the paper tables; changing the
+showcase does not change that grid or its scores.
 
 ## Paired results
 
@@ -41,67 +39,54 @@ records, the same inputs as the main-table AMS calculation.
 | [dm-csv-009 / glm51_qwen_coder](descriptions/glm51_qwen_coder/dm-csv-009/) | 0.333 → 0.333 | 0.05093 → 0.03515 | -31.0% |
 | [dm-csv-009 / qwen36_codex](descriptions/qwen36_codex/dm-csv-009/) | 0.000 → 0.333 | 0.00540 → 0.01142 | +111.4% |
 | [dm-csv-009 / qwen36_kimi_cli](descriptions/qwen36_kimi_cli/dm-csv-009/) | 0.333 → 0.333 | 0.03301 → 0.01409 | -57.3% |
-| [markdown-table-generator / deepseek_v4_kimi_cli](descriptions/deepseek_v4_kimi_cli/markdown-table-generator/) | 0.000 → 0.000 | 0.08426 → 0.04775 | -43.3% |
-| [markdown-table-generator / glm51_qwen_coder](descriptions/glm51_qwen_coder/markdown-table-generator/) | 0.000 → 0.000 | 0.03931 → 0.02605 | -33.7% |
-| [markdown-table-generator / qwen36_codex](descriptions/qwen36_codex/markdown-table-generator/) | 0.000 → 0.000 | 0.01016 → 0.00999 | -1.7% |
-| [markdown-table-generator / qwen36_kimi_cli](descriptions/qwen36_kimi_cli/markdown-table-generator/) | 0.000 → 0.000 | 0.01254 → 0.00958 | -23.6% |
-| [pddl-tpp-planning / deepseek_v4_kimi_cli](descriptions/deepseek_v4_kimi_cli/pddl-tpp-planning/) | 0.000 → 0.000 | 0.10940 → 0.09830 | -10.2% |
-| [pddl-tpp-planning / glm51_qwen_coder](descriptions/glm51_qwen_coder/pddl-tpp-planning/) | 0.000 → 0.000 | 0.14454 → 0.11651 | -19.4% |
-| [pddl-tpp-planning / qwen36_codex](descriptions/qwen36_codex/pddl-tpp-planning/) | 0.000 → 0.000 | 0.08516 → 0.04811 | -43.5% |
-| [pddl-tpp-planning / qwen36_kimi_cli](descriptions/qwen36_kimi_cli/pddl-tpp-planning/) | 0.000 → 0.000 | 0.01565 → 0.01040 | -33.6% |
-| [virtualhome-agent-planning / deepseek_v4_kimi_cli](descriptions/deepseek_v4_kimi_cli/virtualhome-agent-planning/) | 0.000 → 0.000 | 0.18972 → 0.16127 | -15.0% |
-| [virtualhome-agent-planning / glm51_qwen_coder](descriptions/glm51_qwen_coder/virtualhome-agent-planning/) | 1.000 → 1.000 | 0.15674 → 0.09977 | -36.3% |
-| [virtualhome-agent-planning / qwen36_codex](descriptions/qwen36_codex/virtualhome-agent-planning/) | 0.000 → 1.000 | 0.01915 → 0.09448 | +393.4% |
-| [virtualhome-agent-planning / qwen36_kimi_cli](descriptions/qwen36_kimi_cli/virtualhome-agent-planning/) | 0.000 → 1.000 | 0.07612 → 0.07864 | +3.3% |
-| [xlsx-recover-data / deepseek_v4_kimi_cli](descriptions/deepseek_v4_kimi_cli/xlsx-recover-data/) | 0.000 → 0.000 | 0.19523 → 0.08904 | -54.4% |
-| [xlsx-recover-data / glm51_qwen_coder](descriptions/glm51_qwen_coder/xlsx-recover-data/) | 0.000 → 0.000 | 0.22398 → 0.19111 | -14.7% |
-| [xlsx-recover-data / qwen36_codex](descriptions/qwen36_codex/xlsx-recover-data/) | 0.000 → 0.000 | 0.07929 → 0.03817 | -51.9% |
-| [xlsx-recover-data / qwen36_kimi_cli](descriptions/qwen36_kimi_cli/xlsx-recover-data/) | 0.000 → 0.000 | 0.07284 → 0.05296 | -27.3% |
+| [econ-detrending-correlation / deepseek_v4_kimi_cli](descriptions/deepseek_v4_kimi_cli/econ-detrending-correlation/) | 1.000 → 1.000 | 0.07794 → 0.06483 | -16.8% |
+| [econ-detrending-correlation / glm51_qwen_coder](descriptions/glm51_qwen_coder/econ-detrending-correlation/) | 1.000 → 1.000 | 0.20054 → 0.14199 | -29.2% |
+| [econ-detrending-correlation / qwen36_codex](descriptions/qwen36_codex/econ-detrending-correlation/) | 0.000 → 0.000 | 0.05035 → 0.04249 | -15.6% |
+| [econ-detrending-correlation / qwen36_kimi_cli](descriptions/qwen36_kimi_cli/econ-detrending-correlation/) | 1.000 → 1.000 | 0.03469 → 0.03190 | -8.0% |
 
 Recompute this table with `agentmeter tables --examples`.
-All four outcomes per task are included, including cost increases and
-unchanged zero rewards. These are historical observations, not repeated-run
+All four outcomes per task are included, including the cost increase and
+unchanged zero reward. These are historical observations, not repeated-run
 estimates. A lower cost at zero reward is not successful completion; 0.333
 is partial reward, not a full pass. Interpret reward and cost together.
 
 ## Reading the adaptations
 
-The seven groups preserve the stated task targets while illustrating
-different description interventions:
+- Author ranking: public file paths, ranking guidance and template fields.
+- Citation checking: input/output organization and title normalization.
+- CSV validation: existing rules, report fields and completion guidance.
+- Economic analysis: annual/quarterly input parsing and an already specified
+  deflation, filtering and correlation procedure.
 
-- Author ranking: explicit public file paths, guidance and template fields.
-- Citation checking: organized input/output requirements and title normalization.
-- Markdown reporting: explicit section layout and source-specific numeric presentation.
-- Spreadsheet recovery: numeric replacement, cross-sheet relationships and preservation of existing workbook content.
-- CSV validation: unchanged data-quality rules, structured reports and programmatic processing.
-- PDDL planning: explicit action formatting, public planner interfaces and all-instance completion.
-
-Some variants also introduce post-output completion directives. Those are
-execution guidance, not requirements already present in every Original.
-The examples are therefore not uniformly paraphrase-only edits.
-[Description notes](../../docs/description_notes.md) distinguish these
-directives from shared task requirements and document each source variant.
-Task data, environments and verifiers are unchanged.
+Some variants also add post-output stopping directives or restrict inspection.
+These are execution guidance, not requirements already present in every
+Original. [Description notes](../../docs/description_notes.md) explain each
+source variant and the selection criteria. The results measure the complete
+rewrite, rather than attributing savings to an individual directive.
+Task environments and verifiers remain unchanged.
 
 ## Provenance and reuse
 
 - `baseline_instruction.md` is byte-identical to the bundled task's
   `instruction.md`; it is not AgentMeter-authored.
-- `optimized_instruction.md` is the historical AgentMeter-Opt modification.
-  Its parent directories identify the source model–harness pair and task ID.
-  The source pair need not be the evaluation target.
+- `optimized_instruction.md` retains the historical AgentMeter-Opt wording.
+  Its parent directories identify the source pair and task. New text copies
+  use a final newline; their content is not edited for presentation.
+- Instructions are drawn from the frozen
+  `final16_experiment_bundle_20260712_v1/self_optimization/instruction_bundle`
+  archive. All four sources are retained for each selected task.
+- The source pair need not be the evaluation target.
 
 | Local collection | Tasks in this catalog | Attribution |
 |:--|:--|:--|
 | `da_code` | dm-csv-009 | Local [DA-Code](https://github.com/yiyihum/da-code)-compatible collection |
-| `terminal_bench` | markdown-table-generator, csv-data-validator | Local Terminal-Bench-compatible collection |
-| `skillsbench` | citation-check, xlsx-recover-data, pddl-tpp-planning, virtualhome-agent-planning | [SkillsBench](https://github.com/benchflow-ai/skillsbench) |
+| `terminal_bench` | csv-data-validator | Local Terminal-Bench-compatible collection |
+| `skillsbench` | citation-check, econ-detrending-correlation | [SkillsBench](https://github.com/benchflow-ai/skillsbench) |
 
-Collection names are not claims of exact upstream snapshots. Original
-content and retained material in rewrites remain subject to their applicable
-upstream terms, not automatically the repository's MIT license.
-See [third-party notices](../../THIRD_PARTY_NOTICES.md) for attribution and
-task-specific terms, including the separately licensed bundled XLSX skill.
+Collection names are not claims of exact upstream snapshots. Original content
+and retained material in rewrites keep their applicable upstream terms.
+See [third-party notices](../../THIRD_PARTY_NOTICES.md); selection for this
+showcase does not resolve the terms of other bundled task materials.
 
 ## Run an example
 
@@ -112,9 +97,9 @@ agentmeter compare qwen36_codex original dm-csv-009
 agentmeter compare qwen36_codex optimized dm-csv-009
 ```
 
-Replace the task ID with any of the seven catalog tasks and the source ID
+Replace the task ID with any of the four catalog tasks and the source ID
 with any of the four source configurations. Omitting task IDs selects all
-seven released tasks for either condition. Environment variables select the
+four released tasks for either condition. Environment variables select the
 target model and harness; matching the source gives Self.
 Docker and provider access are required. Use different output directories
 for the two conditions if setting `AGENTMETER_JOBS_DIR` explicitly.

@@ -113,7 +113,7 @@ select a different best description for each target.
 ## Reproduce
 
 The release includes **1,160 run records**, frozen task lists and calibration,
-**16 executable tasks**, and **seven complete task groups × four source rewrites**
+**16 executable tasks**, and **four complete task groups × four source rewrites**
 from the 64-description study. Core30/Full80 execution uses
 a separate task checkout.
 [Reproduction scope](docs/reproduction_status.md)
@@ -136,7 +136,7 @@ agentmeter tables --descriptive
 
 This recomputes all 28 Core30 rows and the description-condition results
 from the archived observations. No API or Docker is needed. Use
-`agentmeter tables --examples` for all 28 released Original/Self pairs.
+`agentmeter tables --examples` for all 16 released Original/Self pairs.
 
 ### 2. Run an Original/optimized comparison
 
@@ -196,21 +196,21 @@ external task directories and validation.
 
 ## A description adaptation
 
-**Seven tasks, with all four source rewrites for each.**
+**Four tasks, with all four source rewrites for each.**
 
 | Task | Adaptation focus | Released coverage |
 |:--|:--|:--|
-| [dm-csv-009](docs/description_notes.md#dm-csv-009) | Public ranking guidance, file paths and CSV schema | 4/4 sources |
-| [citation-check](docs/description_notes.md#citation-check) | Bibliography verification, title cleaning and JSON output | 4/4 sources |
-| [markdown-table-generator](docs/description_notes.md#markdown-table-generator) | Sales aggregation, section layout and numeric presentation | 4/4 sources |
-| [xlsx-recover-data](docs/description_notes.md#xlsx-recover-data) | Cross-sheet relationships, numeric recovery and workbook preservation | 4/4 sources |
-| [csv-data-validator](docs/description_notes.md#csv-data-validator) | Validation rules, script execution and JSON report schema | 4/4 sources |
-| [pddl-tpp-planning](docs/description_notes.md#pddl-tpp-planning) | Planning inputs, action formatting and completion across tasks | 4/4 sources |
-| [virtualhome-agent-planning](docs/description_notes.md#virtualhome-agent-planning) | Planner interfaces, plan serialization and tool-use guidance | 4/4 sources |
+| [dm-csv-009](docs/description_notes.md#dm-csv-009) | Public file roles, ranking guidance and CSV schema | 4/4 sources |
+| [citation-check](docs/description_notes.md#citation-check) | Citation identification, title cleaning and JSON delivery | 4/4 sources |
+| [csv-data-validator](docs/description_notes.md#csv-data-validator) | Existing validation rules, report schema and completion guidance | 4/4 sources |
+| [econ-detrending-correlation](docs/description_notes.md#econ-detrending-correlation) | Annual/quarterly data parsing and the specified analysis pipeline | 4/4 sources |
 
-The groups retain their evaluated wording, including source-specific
-formatting and completion directives; they are not uniformly paraphrase-only
-edits. [Inspect every version](artifacts/agentmeter_opt_final16/README.md).
+The showcase covers public artifact interpretation, output contracts and
+completion guidance. Selection is at the task level: every source variant
+and paired outcome is included, with historical wording preserved.
+Some variants add post-output stopping directives; the notes distinguish
+these from requirements already present in Original.
+[Inspect every version](artifacts/agentmeter_opt_final16/README.md).
 
 **One task, all four sources: `dm-csv-009` (author rankings)**
 
@@ -229,9 +229,9 @@ ranking guidance, data and output template are included with the task.
 Publication is task-level: all four historical rewrites and their outcomes
 are shown together, including the cost increase. Rewards here are partial,
 not full passes. These observations illustrate adaptations; the paper's
-aggregate results use the complete study, not the seven example groups.
+aggregate results use the complete study, not the four example groups.
 
-[Read all 28 rewrites and results](artifacts/agentmeter_opt_final16/README.md) ·
+[Read all 16 rewrites and results](artifacts/agentmeter_opt_final16/README.md) ·
 [Interpretation and public evidence](docs/description_notes.md)
 
 ## Code map

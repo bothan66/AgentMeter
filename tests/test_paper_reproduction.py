@@ -69,7 +69,7 @@ def test_final16_matches_manuscript():
 def test_all_example_results_match_catalog():
     rows, _ = load_inputs()
     table = example_table(rows)
-    assert len(table.splitlines()) == 30  # header + separator + seven tasks × four sources
+    assert len(table.splitlines()) == 18  # header + separator + four tasks × four sources
     assert table in (ROOT / "artifacts/agentmeter_opt_final16/README.md").read_text()
 
 

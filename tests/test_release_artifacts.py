@@ -75,16 +75,13 @@ def test_frozen_selections_and_descriptions():
     tasks = {
         "dm-csv-009",
         "citation-check",
-        "markdown-table-generator",
-        "xlsx-recover-data",
         "csv-data-validator",
-        "pddl-tpp-planning",
-        "virtualhome-agent-planning",
+        "econ-detrending-correlation",
     }
     assert {(p.parent.parent.name, p.parent.name) for p in descriptions} == {
         (source, task) for source in sources for task in tasks
     }
-    assert len(descriptions) == 28
+    assert len(descriptions) == 16
     # Publication is task-complete: no source is dropped for its outcome.
     for task in {p.parent.name for p in descriptions}:
         assert {p.parent.parent.name for p in descriptions if p.parent.name == task} == sources

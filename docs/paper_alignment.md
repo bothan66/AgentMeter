@@ -83,7 +83,7 @@ Cross-only and the shared, equal-weight Pooled set test beyond source matching.
 
 Generic records/descriptions and an executable Adapted-1 reconstruction are
 not included in this compact release. The description showcase contains all
-four source variants for each of seven tasks (28 variants), a task-complete
+four source variants for each of four tasks (16 variants), a task-complete
 subset of the 64 constructed variants, not the full 16-task × 4-source grid.
 
 The construction model is Qwen3.7-Max. Evaluation harness names are Claude

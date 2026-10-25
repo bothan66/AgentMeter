@@ -62,7 +62,7 @@ in this data table. No new model executions were performed to create it.
   not averages of source-level AMS. Threshold each observation before
   aggregating TQ, AUBQC and EFR within the frozen strata.
 
-The seven released four-source task groups remain a showcase subset. Scoring the
+The four released four-source task groups remain a showcase subset. Scoring the
 complete archived grid does not require releasing all descriptions or traces;
 regenerating every execution does. This package does not reconstruct Generic,
 Adapted-1, or the complete Full80 experiment table.
