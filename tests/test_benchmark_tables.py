@@ -82,15 +82,16 @@ def test_all_example_results_match_catalog():
 
 def test_cache_creation_display_scope():
     rows, _ = load_scoring_data()
-    cc_rows = 0
+    claude_rows = 0
     for row in rows:
         value = row["cache_creation_input_tokens"]
-        if row["target"].endswith(("__Claude_Code", "__claude-code")):
-            cc_rows += 1
+        model = row["target"].split("__", 1)[0]
+        if model.lower().startswith("claude"):
+            claude_rows += 1
             assert value != "" and int(value) >= 0
         else:
             assert value == ""  # Not displayed, not measured zero.
-    assert cc_rows == 210
+    assert claude_rows == 120
 
 
 def test_scoring_records_exclude_auxiliary_counters():

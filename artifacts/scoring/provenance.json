@@ -10,6 +10,6 @@
     "paper_recompute_20260713_benchmark80_budget_grids_usd.json": "556f278e95e217c5d0da2d63f63ec8e5f40a1f7e36d6fbd84448bcbcdc19d9eb",
     "paper_recompute_20260713_benchmark80_tau_usd.json": "23b90a8bd4f158881c5a81b13cf7870bcd443ad7182ba06c03e281a73d59d4b6"
   },
-  "transform": "Select Core30 archived valid rows (including exceptions), Final16 Original/Self and optimized Cross rows; join archived effort strata. Retain numeric strings, remove private paths, exception text and the has_exception indicator. Display archived cache_creation_input_tokens for Claude Code targets only; leave other harnesses blank (not zero). Preserve archived cost_usd and billable_component_tokens unchanged. Omit auxiliary steps, tool_calls and alternate cache_read_input_tokens counters from the release. Cross baseline copies are not counted as new runs.",
+  "transform": "Select Core30 archived valid rows (including exceptions), Final16 Original/Self and optimized Cross rows; join archived effort strata. Retain numeric strings, remove private paths, exception text and the has_exception indicator. Display archived cache_creation_input_tokens for Claude models across all harnesses; leave other models blank (not zero). Preserve archived cost_usd and billable_component_tokens unchanged. Omit auxiliary steps, tool_calls and alternate cache_read_input_tokens counters from the release. Cross baseline copies are not counted as new runs.",
   "published_pricing_file": "configs/paper_model_pricing.json"
 }

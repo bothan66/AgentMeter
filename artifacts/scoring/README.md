@@ -39,7 +39,8 @@ in this data table. No new model executions were performed to create it.
   the archived accounting total used for tokens/pass. `cached_input_tokens`
   retains the primary archived cache-hit counter.
 - `cache_creation_input_tokens` displays the archived counter for Claude
-  Code targets only (210 rows). It is blank for other harnesses by display
+  models across all four harnesses (120 rows), not for the Claude Code harness
+  specifically. It is blank for other models by display
   convention, not a claim of zero cache creation or absence of upstream
   measurements. Archived zero values are retained, including zeros produced
   by the historical extractor's missing-field default. This display selection
