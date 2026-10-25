@@ -1,11 +1,18 @@
+"""Benchmark table reproduction, adaptation comparisons, and experiment-grid validation."""
+
 import csv
 from copy import deepcopy
 
 import pytest
 
 from agentmeter.paths import find_repository
-from agentmeter.reporting.descriptive import descriptive_tables
-from agentmeter.reporting.paper import compute_tables, example_table, load_inputs, validate_grid
+from agentmeter.reporting.adaptation_comparison import build_adaptation_comparisons
+from agentmeter.reporting.benchmark_tables import (
+    build_benchmark_tables,
+    load_scoring_data,
+    render_example_comparison,
+    validate_experiment_grid,
+)
 
 ROOT = find_repository()
 
@@ -33,7 +40,7 @@ def short_pair(target):
 
 
 def test_recompute_all_core30_paper_rows():
-    core, _ = compute_tables(*load_inputs())
+    core, _ = build_benchmark_tables(*load_scoring_data())
     with (ROOT / "artifacts/core30_paper_results.csv").open() as f:
         reference = {r["pair"]: r for r in csv.DictReader(f)}
     assert len(core) == len(reference) == 28
@@ -46,7 +53,7 @@ def test_recompute_all_core30_paper_rows():
 
 
 def test_final16_matches_manuscript():
-    _, final = compute_tables(*load_inputs())
+    _, final = build_benchmark_tables(*load_scoring_data())
     expected = {
         "qwen36_kimi_cli": (0.353, 0.470, 0.457),
         "qwen36_codex": (0.250, 0.457, 0.411),
@@ -67,14 +74,14 @@ def test_final16_matches_manuscript():
 
 
 def test_all_example_results_match_catalog():
-    rows, _ = load_inputs()
-    table = example_table(rows)
+    rows, _ = load_scoring_data()
+    table = render_example_comparison(rows)
     assert len(table.splitlines()) == 18  # header + separator + four tasks × four sources
     assert table in (ROOT / "artifacts/agentmeter_opt_final16/README.md").read_text()
 
 
 def test_cache_creation_display_scope():
-    rows, _ = load_inputs()
+    rows, _ = load_scoring_data()
     cc_rows = 0
     for row in rows:
         value = row["cache_creation_input_tokens"]
@@ -87,14 +94,14 @@ def test_cache_creation_display_scope():
 
 
 def test_scoring_records_exclude_auxiliary_counters():
-    rows, _ = load_inputs()
-    assert not {"steps", "tool_calls", "cache_read_input_tokens"} & rows[0].keys()
+    rows, _ = load_scoring_data()
+    assert not {"steps", "tool_calls", "cache_read_input_tokens", "has_exception"} & rows[0].keys()
 
 
 def test_descriptive_tables_use_same_costs_as_main_tables():
-    inputs = load_inputs()
-    _, final = compute_tables(*inputs)
-    summary, transfers = descriptive_tables(*inputs)
+    inputs = load_scoring_data()
+    _, final = build_benchmark_tables(*inputs)
+    summary, transfers = build_adaptation_comparisons(*inputs)
     assert len(summary) == 8 and len(transfers) == 12
     for r in summary:
         ref = final[r["target"]][r["condition"]]
@@ -108,11 +115,11 @@ def test_descriptive_tables_use_same_costs_as_main_tables():
 
 
 def test_reject_incomplete_duplicate_or_inconsistent_grid():
-    rows, _ = load_inputs()
+    rows, _ = load_scoring_data()
     for invalid in [rows[:-1], rows + [rows[0]]]:
         with pytest.raises(ValueError):
-            validate_grid(invalid)
+            validate_experiment_grid(invalid)
     altered = deepcopy(rows)
     altered[0]["stratum"] = "Hard" if altered[0]["stratum"] != "Hard" else "Easy"
     with pytest.raises(ValueError):
-        validate_grid(altered)
+        validate_experiment_grid(altered)

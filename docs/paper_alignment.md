@@ -42,7 +42,7 @@ each task-source is an observation in a complete balanced grid; apply budget
 and failure thresholds before aggregation, not to averaged costs. Pooled
 is not the mean of separately computed source AMS values, because EFR
 multiplies the quality term. See [data provenance](../artifacts/scoring/README.md).
-The implementation is [`agentmeter.metrics.paper`](../src/agentmeter/metrics/paper.py).
+The implementation is [`agentmeter.metrics.agentmeter_score`](../src/agentmeter/metrics/agentmeter_score.py).
 
 ## Currency and archived scores
 

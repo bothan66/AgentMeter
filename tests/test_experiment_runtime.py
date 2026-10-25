@@ -1,4 +1,4 @@
-"""Exercise the Python runtime without invoking a model or Docker."""
+"""Experiment planning and Harbor launch contracts without model or Docker calls."""
 
 import json
 import os

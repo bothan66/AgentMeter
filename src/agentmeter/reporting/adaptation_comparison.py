@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Summarize Final16 from the same archived USD records as the AMS tables."""
+"""Compare Original, Self, and Cross adaptation outcomes from archived records."""
 
-from .paper import summarize
+from .benchmark_tables import summarize_run_outcomes
 
 
-def descriptive_tables(rows, calibration):
+def build_adaptation_comparisons(rows, calibration):
+    """Return Original/Self summaries and paired cross-source transfer outcomes."""
     rows = [r for r in rows if r["dataset"] == "final16"]
     targets = sorted({r["target"] for r in rows})
     summary = []
@@ -13,10 +14,14 @@ def descriptive_tables(rows, calibration):
         for condition in ["Original", "Self"]:
             selected = [r for r in rows if r["target"] == target and r["condition"] == condition]
             summary.append(
-                dict(target=target, condition=condition, **summarize(selected, calibration))
+                dict(
+                    target=target,
+                    condition=condition,
+                    **summarize_run_outcomes(selected, calibration),
+                )
             )
         baseline = [r for r in rows if r["target"] == target and r["condition"] == "Original"]
-        before = summarize(baseline, calibration)
+        before = summarize_run_outcomes(baseline, calibration)
         for source in targets:
             if source == target:
                 continue
@@ -25,14 +30,14 @@ def descriptive_tables(rows, calibration):
                 for r in rows
                 if r["target"] == target and r["source"] == source and r["condition"] == "Cross"
             ]
-            after = summarize(selected, calibration)
+            after = summarize_run_outcomes(selected, calibration)
             transfers.append(dict(source=source, target=target, before=before, after=after))
     return summary, transfers
 
 
-def print_tables(rows, calibration):
+def print_adaptation_comparisons(rows, calibration):
     """Print the descriptive comparisons using the same archived billing data."""
-    summary, transfers = descriptive_tables(rows, calibration)
+    summary, transfers = build_adaptation_comparisons(rows, calibration)
     print(
         "| Target | Condition | N | Mean reward | Full passes | Total cost (USD) | Archived accounting tokens |"
     )

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Recompute Core30 and Final16 AMS from compact archived run records."""
+"""Build Core30 and Final16 benchmark tables from archived run records."""
 
 import argparse
 import csv
@@ -7,20 +7,21 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from agentmeter.metrics.paper import paper_ams
+from agentmeter.metrics.agentmeter_score import compute_ams
 from agentmeter.paths import find_repository
 
 
-def load_inputs(repository=None):
+def load_scoring_data(repository=None):
+    """Load archived run records and calibration, validating the full experiment grid."""
     root = find_repository(repository)
     with (root / "artifacts/scoring/run_metrics.csv").open(newline="") as f:
         rows = list(csv.DictReader(f))
     calibration = json.loads((root / "configs/paper_calibration_full_precision.json").read_text())
-    validate_grid(rows, root)
+    validate_experiment_grid(rows, root)
     return rows, calibration
 
 
-def validate_grid(rows, repository=None):
+def validate_experiment_grid(rows, repository=None):
     """Reject missing, duplicated, or mispaired observations before scoring."""
     keys = [(r["dataset"], r["target"], r["source"], r["condition"], r["task_id"]) for r in rows]
     if len(keys) != len(set(keys)):
@@ -58,12 +59,13 @@ def validate_grid(rows, repository=None):
         raise ValueError("Core30 must have 10 tasks in each stratum")
 
 
-def summarize(rows, calibration):
+def summarize_run_outcomes(rows, calibration):
+    """Aggregate AMS, rewards, passes, recorded costs, and accounting tokens."""
     # In balanced Cross/Pooled grids, each task-source is one observation.
     # Never average costs/rewards before thresholding, or average source AMS:
     # EFR multiplies quality, so those would implement different estimands.
     observations = [dict(r, task_id=r["source"] + "/" + r["task_id"]) for r in rows]
-    score = paper_ams(observations, calibration)["AMS"]
+    score = compute_ams(observations, calibration)["AMS"]
     passes = sum(float(r["reward"]) == 1 for r in rows)
     return dict(
         AMS=score,
@@ -75,11 +77,12 @@ def summarize(rows, calibration):
     )
 
 
-def compute_tables(rows, calibration):
+def build_benchmark_tables(rows, calibration):
+    """Group Core30 by target and Final16 by target and adaptation condition."""
     core = {}
     final = {}
     for target in sorted({r["target"] for r in rows if r["dataset"] == "core30"}):
-        core[target] = summarize(
+        core[target] = summarize_run_outcomes(
             [r for r in rows if r["dataset"] == "core30" and r["target"] == target], calibration
         )
     for target in sorted({r["target"] for r in rows if r["dataset"] == "final16"}):
@@ -96,11 +99,11 @@ def compute_tables(rows, calibration):
                     and r["condition"] in {"Self", "Cross"}
                 )
             ]
-            final[target][condition] = summarize(sub, calibration)
+            final[target][condition] = summarize_run_outcomes(sub, calibration)
     return core, final
 
 
-def example_table(rows, repository=None):
+def render_example_comparison(rows, repository=None):
     """Pair every released example with its archived Original and Self result."""
     index = {
         (r["target"], r["task_id"], r["condition"]): r
@@ -141,16 +144,16 @@ def main(argv=None):
         help="Print reward, USD cost and source-transfer summaries",
     )
     args = parser.parse_args(argv)
-    rows, calibration = load_inputs(args.repository)
+    rows, calibration = load_scoring_data(args.repository)
     if args.descriptive:
-        from .descriptive import print_tables
+        from .adaptation_comparison import print_adaptation_comparisons
 
-        print_tables(rows, calibration)
+        print_adaptation_comparisons(rows, calibration)
         return 0
     if args.examples:
-        print(example_table(rows, args.repository))
+        print(render_example_comparison(rows, args.repository))
         return 0
-    core, final = compute_tables(rows, calibration)
+    core, final = build_benchmark_tables(rows, calibration)
     print("| Core30 target | Passes | Tokens/pass (M) | USD/pass | AMS |")
     print("|:--|--:|--:|--:|--:|")
     for target, r in sorted(core.items(), key=lambda item: -item[1]["AMS"]):

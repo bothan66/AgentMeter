@@ -1,4 +1,4 @@
-"""Manuscript AMS: USD budgets, zero-reward EFR, equal-stratum mean.
+"""AgentMeter Score (AMS): USD budgets, zero-reward EFR, equal-stratum mean.
 
 Input rows represent one evaluated configuration/condition and contain
 task_id, stratum (Easy/Medium/Hard), reward, and cost_usd. Repeated runs must
@@ -12,7 +12,9 @@ from typing import Any
 CNY_TO_USD = 0.1471
 
 
-def paper_ams(rows: Iterable[Mapping[str, Any]], calibration: Mapping[str, Any]) -> dict[str, Any]:
+def compute_ams(
+    rows: Iterable[Mapping[str, Any]], calibration: Mapping[str, Any]
+) -> dict[str, Any]:
     """Score one condition with the manuscript's fixed USD calibration.
 
     For each difficulty stratum, combine mean task quality (TQ) with mean

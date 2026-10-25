@@ -6,7 +6,7 @@ import csv
 import json
 from pathlib import Path
 
-from agentmeter.metrics.paper import paper_ams
+from agentmeter.metrics.agentmeter_score import compute_ams
 from agentmeter.paths import find_repository
 
 
@@ -26,7 +26,7 @@ def main(argv=None):
         rows = list(csv.DictReader(f))
     with open(calibration_path) as f:
         calibration = json.load(f)
-    print(json.dumps(paper_ams(rows, calibration), indent=2))
+    print(json.dumps(compute_ams(rows, calibration), indent=2))
 
 
 if __name__ == "__main__":

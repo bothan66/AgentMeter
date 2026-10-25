@@ -1,6 +1,8 @@
+"""AgentMeter Score formula and invalid-input regression tests."""
+
 import pytest
 
-from agentmeter.metrics.paper import paper_ams
+from agentmeter.metrics.agentmeter_score import compute_ams
 
 
 def calibration():
@@ -21,7 +23,7 @@ def test_formula_partial_rewards_and_equal_stratum_weight():
         dict(task_id="c", stratum="Medium", reward=0.5, cost_usd=3),
         dict(task_id="d", stratum="Hard", reward=1, cost_usd=2),
     ]
-    result = paper_ams(rows, calibration())
+    result = compute_ams(rows, calibration())
     assert result["strata"]["Easy"]["AMS"] == pytest.approx(0.25)
     assert result["strata"]["Medium"]["EFR"] == 0
     assert result["strata"]["Hard"]["AUBQC"] == 0.5
@@ -32,4 +34,4 @@ def test_missing_strata_duplicates_and_nonfinite_rejected():
     row = dict(task_id="a", stratum="Easy", reward=1, cost_usd=1)
     for rows in [[row], [row, row], [dict(row, cost_usd=float("nan"))]]:
         with pytest.raises(ValueError):
-            paper_ams(rows, calibration())
+            compute_ams(rows, calibration())

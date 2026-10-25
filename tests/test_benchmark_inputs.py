@@ -1,6 +1,5 @@
-"""Check that released selections and description combinations are executable inputs."""
+"""Check benchmark task selections, description pairs, and Docker build dependencies."""
 
-import csv
 import json
 import shlex
 import subprocess
@@ -107,9 +106,6 @@ def test_frozen_selections_and_descriptions():
         (source, task) for source in sources for task in tasks
     }
     assert len(descriptions) == 16
-    # Publication is task-complete: no source is dropped for its outcome.
-    for task in {p.parent.name for p in descriptions}:
-        assert {p.parent.parent.name for p in descriptions if p.parent.name == task} == sources
     for optimized in descriptions:
         (task_dir,) = (ROOT / "benchmark_tasks").glob(f"*/{optimized.parent.name}")
         assert (
@@ -117,13 +113,3 @@ def test_frozen_selections_and_descriptions():
             == (task_dir / "instruction.md").read_bytes()
         )
         assert optimized.stat().st_size > 0
-
-
-def test_cross_grid_is_complete_and_unique():
-    with (ROOT / "artifacts/scoring/run_metrics.csv").open() as f:
-        rows = [
-            r for r in csv.DictReader(f) if r["dataset"] == "final16" and r["condition"] == "Cross"
-        ]
-    keys = [(r["task_id"], r["source"], r["target"]) for r in rows]
-    assert len(keys) == len(set(keys)) == 192
-    assert all(source != target for _, source, target in keys)

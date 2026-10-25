@@ -62,7 +62,7 @@ TQ preserves partial reward. AUBQC measures reward achieved within calibrated
 billable-cost budgets. EFR discounts costly zero-reward runs. All pairs use
 the same frozen strata, calibration and billing rules.
 
-[Scoring implementation](src/agentmeter/metrics/paper.py) ·
+[Scoring implementation](src/agentmeter/metrics/agentmeter_score.py) ·
 [Protocol and aggregation](docs/paper_alignment.md)
 
 </details>
@@ -250,10 +250,10 @@ The research implementation lives in one installable Python package:
 
 | Module | Responsibility |
 |:--|:--|
-| [`agentmeter.metrics`](src/agentmeter/metrics/) | Manuscript AMS and calibration inputs |
+| [`agentmeter.metrics`](src/agentmeter/metrics/) | AMS computation: `agentmeter_score.compute_ams` |
 | [`agentmeter.optimization`](src/agentmeter/optimization/) | Trajectory evidence, candidate construction and preservation checks |
 | [`agentmeter.runtime`](src/agentmeter/runtime/) | Pinned Harbor setup, task selection and paired execution |
-| [`agentmeter.reporting`](src/agentmeter/reporting/) | Archived result validation and table reproduction |
+| [`agentmeter.reporting`](src/agentmeter/reporting/) | `benchmark_tables` reproduces results; `adaptation_comparison` compares rewrite outcomes |
 | [`agentmeter.providers`](src/agentmeter/providers/) | Endpoint probes and private routing configuration |
 
 [Architecture](docs/architecture.md) · [Task lists](configs/task_lists/) ·

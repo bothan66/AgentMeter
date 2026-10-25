@@ -47,8 +47,8 @@ in this data table. No new model executions were performed to create it.
   used to infer a new billing formula. The table reproduces scoring from
   recorded costs, not a fresh provider invoice calculation.
 - All archived valid-run rows are retained, including zero rewards and
-  exceptions. `has_exception` records presence, not a new validity filter.
-  Core30 contains 66 such exception-marked observations.
+  exceptions. The release omits the exception indicator, not the observations;
+  Core30 retains all 66 observations marked with exceptions in the archive.
 - Cross baseline copies are omitted: the 64 Original observations are
   counted once. Self/Cross identify the rewrite source and evaluation target.
 - Pooled uses all four sources per task; Cross-only uses the three other

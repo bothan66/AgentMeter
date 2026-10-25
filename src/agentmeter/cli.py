@@ -14,7 +14,7 @@ COMMANDS = {
         "agentmeter.runtime.skills",
         "Prepare hash-verified skills from a user-supplied SkillsBench checkout",
     ),
-    "tables": ("agentmeter.reporting.paper", "Reproduce archived paper tables"),
+    "tables": ("agentmeter.reporting.benchmark_tables", "Reproduce archived paper tables"),
     "score": ("agentmeter.metrics.cli", "Compute AMS from task-level reward and USD cost"),
     "optimize": (
         "agentmeter.optimization.optimize",
