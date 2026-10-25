@@ -53,6 +53,5 @@ def print_tables(rows, calibration):
         )
     print(
         "\nUses archived cost_usd without reconversion or repricing. "
-        "Original baselines repeat for comparison, not as additional executions. "
-        "Historical extraction counters are in artifacts/scoring/diagnostics.csv."
+        "Original baselines repeat for comparison, not as additional executions."
     )

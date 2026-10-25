@@ -86,17 +86,8 @@ def test_cache_creation_display_scope():
     assert cc_rows == 210
 
 
-def test_diagnostics_preserve_one_to_one_run_keys():
+def test_scoring_records_exclude_auxiliary_counters():
     rows, _ = load_inputs()
-    with (ROOT / "artifacts/scoring/diagnostics.csv").open() as f:
-        diagnostics = list(csv.DictReader(f))
-    keys = ["dataset", "target", "source", "condition", "task_id"]
-
-    def key(row):
-        return tuple(row[field] for field in keys)
-
-    assert len(diagnostics) == len({key(r) for r in diagnostics}) == 1160
-    assert {key(r) for r in diagnostics} == {key(r) for r in rows}
     assert not {"steps", "tool_calls", "cache_read_input_tokens"} & rows[0].keys()
 
 
