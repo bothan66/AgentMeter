@@ -10,6 +10,10 @@ from collections.abc import Sequence
 
 # Heavy optimization dependencies are imported only by their own commands.
 COMMANDS = {
+    "prepare-skills": (
+        "agentmeter.runtime.skills",
+        "Prepare hash-verified skills from a user-supplied SkillsBench checkout",
+    ),
     "tables": ("agentmeter.reporting.paper", "Reproduce archived paper tables"),
     "score": ("agentmeter.metrics.cli", "Compute AMS from task-level reward and USD cost"),
     "optimize": (

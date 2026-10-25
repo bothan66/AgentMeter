@@ -5,11 +5,14 @@ import shlex
 import subprocess
 from pathlib import Path
 
+from agentmeter.runtime.skills import load_skill_manifest
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_dockerfile_local_inputs_are_included():
-    """Catch inputs present locally but omitted from a fresh Git checkout."""
+    """Require local build inputs or an explicit external skill dependency."""
+    external_skills = load_skill_manifest(ROOT)
     released = None
     if (ROOT / ".git").exists():
         names = (
@@ -31,6 +34,14 @@ def test_dockerfile_local_inputs_are_included():
             sources = [part for part in parts[1:-1] if not part.startswith("--")]
             for source in sources:
                 if source.startswith(("https://", "http://")):
+                    continue
+                task_dir = dockerfile.parent.parent
+                if (
+                    source == "skills"
+                    and task_dir.parent.name == "skillsbench"
+                    and task_dir.name in external_skills
+                ):
+                    assert external_skills[task_dir.name]
                     continue
                 matches = list(dockerfile.parent.glob(source))
                 assert matches, (dockerfile, source)

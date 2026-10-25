@@ -2,8 +2,10 @@
 
 This directory freezes the 16 executable task bundles used by the
 AgentMeter-Opt study. Each task retains its original `instruction.md`, Docker
-environment, input artifacts, verifier, and reference solution so that Harbor
-can execute it without a separate local task checkout.
+environment, input artifacts, verifier, and reference solution. Third-party
+skill contents are external dependencies rather than bundled source files.
+For the seven SkillsBench tasks, prepare the files listed in the
+[skill inventory](../integrations/skillsbench/SKILLS.md) before Harbor execution.
 
 | Subdirectory | Origin | Tasks |
 |:--|:--|--:|
@@ -17,4 +19,5 @@ benchmark licenses before redistributing a derived task independently.
 
 Optimized descriptions are stored separately under
 `artifacts/agentmeter_opt_final16/descriptions/`; the immutable task bundles
-here always contain the shared Original description.
+here always contain the shared Original description. Removing bundled skills
+does not change the descriptions, Dockerfile skill paths, or verifier rules.

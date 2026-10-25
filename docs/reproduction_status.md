@@ -10,14 +10,17 @@ The `agentmeter` command and `python -m agentmeter` expose the same interface.
 | Inspect four complete four-source examples | `agentmeter tables --examples` | 16 released pairs and their archived results |
 | Score one condition | `agentmeter score --runs condition.csv` | Task ID, frozen stratum, reward and USD cost |
 | Prepare pinned Harbor | `agentmeter setup` | Git, Python 3.12–3.13 and network access |
+| Prepare external skills | `agentmeter prepare-skills --source-root TASKS` | Matching user-supplied SkillsBench files |
 | Replay a paired example | `agentmeter compare SOURCE CONDITION TASK` | Harbor, Docker and provider credentials |
 | Run a frozen task list | `agentmeter suite TASK_LIST` | Matching task checkout and target configuration |
 | Construct a description | `agentmeter optimize --help` | Source task, trajectory and reflection API |
 
-The release contains 16 executable tasks and all four source rewrites of
+The release contains 16 task definitions and all four source rewrites of
 four tasks: `dm-csv-009`, `citation-check`, `csv-data-validator` and
 `econ-detrending-correlation`. Archived scoring covers all 840 Core30 and 320 Final16
 observations, including the 192 Cross outcomes.
+The seven SkillsBench tasks require separately supplied skills; the
+[inventory](../integrations/skillsbench/SKILLS.md) records their paths and hashes.
 
 ## Recompute archived results
 
@@ -48,6 +51,8 @@ agentmeter compare qwen36_codex optimized dm-csv-009
 The source pair selects the released instruction; `AGENTMETER_MODEL` and
 `AGENTMETER_AGENT` select the evaluation target. Omitting task IDs runs the
 same released source-specific subset for Original and optimized conditions.
+Prepare external skills first for `citation-check` and `econ-detrending-correlation`;
+the `dm-csv-009` and `csv-data-validator` examples have no such dependency.
 Each invocation creates a separate run directory. If setting
 `AGENTMETER_JOBS_DIR` explicitly, give each condition a new directory.
 Instruction snapshots, Harbor results, trajectories and verifier outputs

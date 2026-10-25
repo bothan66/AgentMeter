@@ -273,7 +273,11 @@ def run_plan(plan: RunPlan) -> None:
     Snapshot checks happen again immediately before writing, so a previously
     planned run cannot overwrite results produced in the meantime.
     """
+    from .skills import verify_task_skills
+
     _check_destinations(plan.jobs_dir, plan.tasks)
+    for task in plan.tasks:
+        verify_task_skills(task.source)
     if shutil.which(plan.options.harbor) is None:
         raise ValueError(
             f"Harbor executable not found: {plan.options.harbor}; run agentmeter setup first"

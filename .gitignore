@@ -28,4 +28,6 @@ dist/
 *.pdf
 !/benchmark_tasks/skillsbench/sales-pivot-analysis/environment/population.pdf
 /proxy-auth/
+# Third-party skills are supplied locally, not redistributed by AgentMeter.
+/benchmark_tasks/skillsbench/*/environment/skills/
 .DS_Store

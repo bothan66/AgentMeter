@@ -4,7 +4,9 @@ AgentMeter recognizes SkillsBench/Harbor task layouts through
 [`agentmeter.tasks`](../../src/agentmeter/tasks.py); its Python runtime sends
 selected task paths to Harbor for execution.
 
-The release bundles 16 tasks under `benchmark_tasks/`. For a larger task
+The release bundles 16 task definitions under `benchmark_tasks/`, with
+third-party skill contents supplied separately. See the [skill inventory and
+preparation command](SKILLS.md) for the seven SkillsBench tasks. For a larger task
 selection, keep a compatible task checkout outside AgentMeter and point the
 suite launcher to it:
 
@@ -13,8 +15,9 @@ export AGENTMETER_TASK_ROOT=/path/to/external/skillsbench/tasks
 agentmeter suite configs/task_lists/core30.public.txt --dry-run
 ```
 
-The upstream URL and paper-time commit are recorded in
-`integrations/agentmeter_runtime.lock.json`; AgentMeter does not download that task tree.
+The upstream URL and reference checkout commit are recorded in
+`integrations/agentmeter_runtime.lock.json`; this is not a verified file-level
+pin for the historical skills. AgentMeter does not download that task tree.
 All released Final16 examples use the bundled task directories.
 
 Expected task layout:

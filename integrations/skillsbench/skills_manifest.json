@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/benchflow-ai/skillsbench",
+  "upstream_commit": null,
+  "provenance": "Paths identify the historical local SkillsBench task collection. An exact upstream revision for these skill files has not been verified; SHA256 values identify the files used by the bundled task snapshot.",
+  "tasks": {
+    "citation-check": {
+      "citation-management/SKILL.md": "2dff78725d4952afe1cc83240649b9240a4ef3d5fb817d076ddd930d574f831d",
+      "citation-management/assets/bibtex_template.bib": "69095a0fd392976ef402f21ae08e7a2eaffa8ce1848074123c6684956d946c03",
+      "citation-management/assets/citation_checklist.md": "27422eac274a10762d28b50c9b30f86ac4a2fef3cddab0a0a16300eb2f325461",
+      "citation-management/references/bibtex_formatting.md": "a02a65eb5aeccc15cc795e348d03bb0b749247b32eec8a8f20825da585b48157",
+      "citation-management/references/citation_validation.md": "2c5d6ddbf26d2b6db5edcf1c826020be348c1daf22ee3a271c0c441de587db2b",
+      "citation-management/references/google_scholar_search.md": "a16c16b4ce55cecfdce3eeb4667125b5c0fbc7041d8485aa4ec8ee9e715a475f",
+      "citation-management/references/metadata_extraction.md": "71ec43daa1169f26aa2dd5bf60bf1c3406a6240a2da8ef8b80d00af3534d56c3",
+      "citation-management/references/pubmed_search.md": "2975a41117d99f524bc7784e1e4820d158782d1bd7f567cf115461631aae40c2",
+      "citation-management/scripts/doi_to_bibtex.py": "c23ba8bed85c562c300d8acbf20e55e9e77bc8d933f40b0f628d1fe7441a5d38",
+      "citation-management/scripts/extract_metadata.py": "93a367f00183b90fb87816bc5b6236046ebd2be4cb06224b9023f48957de0809",
+      "citation-management/scripts/format_bibtex.py": "831c430afcd96342dba8263c17704334addd35053f1c546cc0258cefeb5745cc",
+      "citation-management/scripts/search_google_scholar.py": "0ed277d4ead882c7611a0724523871a34ac200b230544794ead24110faae83c0",
+      "citation-management/scripts/search_pubmed.py": "3ddccbdaeac24bf5ed676c316ed39cf443ab82cb54f1c7793320a7ea75e76880",
+      "citation-management/scripts/validate_citations.py": "8cee1fc9eee4b27519c6c11a697a179ea22d830ed3a851898bed543762d70532"
+    },
+    "econ-detrending-correlation": {
+      "timeseries-detrending/SKILL.md": "1169a82443b6b4571dbc37017c41e1b2b1e05e86e9d0b304af726c711111d4cd"
+    },
+    "lab-unit-harmonization": {
+      "lab-unit-harmonization/SKILL.md": "60eea92e906b140bafcfb50d7c26ecac645f2a434418080fe07ee5b8af115afe",
+      "lab-unit-harmonization/reference/ckd_lab_features.md": "07867182a882242324960bc1721fcc3f197209298c85c38d0e9e0cdec4f7e62c"
+    },
+    "pddl-tpp-planning": {
+      "pddl-skills/SKILL.md": "adc4db64d2554074650a49a11f008698c7e95f69967e300ba219c5777f9ced4b",
+      "pddl-skills/generate_plan.skill": "0e87f8ae98a524ce99779bdb79fe569e0dbcc8a77dc1795f0503501c7ae3d629",
+      "pddl-skills/load_problem.skill": "66fe85a19bfd8f6523b22ce5ec558fe3a68b19daf406546d4cbf1ae15e4399dc",
+      "pddl-skills/save_plan.skill": "ca84320e8fa16da7d926ddd6a4858111490970e8a988a5a9acb74f9bce67e4c9",
+      "pddl-skills/validate.skill": "a07da1277fdd81db82cb0edba271be6f46c5233234fd153debc5a93c9b7ba4c0"
+    },
+    "sales-pivot-analysis": {
+      "pdf/SKILL.md": "332f39fecedcfef2fa73108937e1b2d8c6789a53067a92fed8cadd9ec9e62305",
+      "xlsx/SKILL.md": "845c73412be7cb9c1fcba4236a2102e8a52f0a83732496f03b3d95a0458c1ace"
+    },
+    "virtualhome-agent-planning": {
+      "pddl-skills/SKILL.md": "adc4db64d2554074650a49a11f008698c7e95f69967e300ba219c5777f9ced4b",
+      "pddl-skills/generate_plan.skill": "0e87f8ae98a524ce99779bdb79fe569e0dbcc8a77dc1795f0503501c7ae3d629",
+      "pddl-skills/load_problem.skill": "66fe85a19bfd8f6523b22ce5ec558fe3a68b19daf406546d4cbf1ae15e4399dc",
+      "pddl-skills/save_plan.skill": "13741f91a5d99190da2f150dd1643a5cfd94dd021af776771c194e69d6a2ff77",
+      "pddl-skills/validate.skill": "a07da1277fdd81db82cb0edba271be6f46c5233234fd153debc5a93c9b7ba4c0"
+    },
+    "xlsx-recover-data": {
+      "data-reconciliation/SKILL.md": "59f07a0eafef525d24c3fdcdafac1851444b55a131439569a98d90273afa700c",
+      "xlsx/LICENSE.txt": "79f6d8f5b427252fa3b1c11ecdbdb6bf610b944f7530b4de78f770f38741cfaa",
+      "xlsx/SKILL.md": "9bdc1fee81f3be9cb34ac49f8890c094a3855d3d0236783d10e0ea6df1515e01",
+      "xlsx/recalc.py": "f0833720e26fa894c9c1ccf0bd71dfc4609f8a310360fb2de2071efb64fbd409"
+    }
+  },
+  "executable_files": {
+    "citation-check": [
+      "citation-management/scripts/extract_metadata.py",
+      "citation-management/scripts/format_bibtex.py",
+      "citation-management/scripts/search_google_scholar.py",
+      "citation-management/scripts/search_pubmed.py",
+      "citation-management/scripts/validate_citations.py"
+    ]
+  }
+}

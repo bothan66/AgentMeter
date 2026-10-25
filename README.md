@@ -113,8 +113,10 @@ select a different best description for each target.
 ## Reproduce
 
 The release includes **1,160 run records**, frozen task lists and calibration,
-**16 executable tasks**, and **four complete task groups × four source rewrites**
-from the 64-description study. Core30/Full80 execution uses
+**16 task definitions**, and **four complete task groups × four source rewrites**
+from the 64-description study. SkillsBench skill contents are external
+dependencies: see the [skill inventory and preparation](integrations/skillsbench/SKILLS.md).
+Core30/Full80 execution uses
 a separate task checkout.
 [Reproduction scope](docs/reproduction_status.md)
 

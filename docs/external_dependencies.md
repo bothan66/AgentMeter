@@ -1,7 +1,21 @@
 # Execution dependencies
 
-Final16 task bundles are included. Core30 and Full80 currently ship selections
-only; a task checkout containing every selected ID is required.
+Final16 task definitions are included; their third-party skill contents are
+external dependencies. Core30 and Full80 currently ship selections only;
+a task checkout containing every selected ID is required.
+
+## SkillsBench skills
+
+The [skill inventory](../integrations/skillsbench/SKILLS.md) identifies the nine
+task-scoped skill directories and all 33 dependency files. Supply a matching
+task collection under the upstream terms, then run:
+
+```bash
+agentmeter prepare-skills --source-root /path/to/skillsbench/tasks
+```
+
+Files are hash-checked and kept in Git-ignored directories. This step is not
+needed to reconstruct paper tables or run the `dm-csv-009` example.
 
 ## Harbor
 
@@ -23,10 +37,11 @@ agentmeter setup
 export AGENTMETER_HARBOR_BIN=harbor
 ```
 
-The setup command prepares Harbor only. The 16 released task bundles are already
-included. For larger Core30/Full80 selections, keep a separate compatible task
+The setup command prepares Harbor only. The 16 released task definitions are
+included; prepare their external skills separately as above. For larger
+Core30/Full80 selections, keep a separate compatible task
 checkout outside this repository and set `AGENTMETER_TASK_ROOT` to it. Exact
-dependency and task-source pins are machine-readable in
+Runtime dependency pins and the reference task-source revision are machine-readable in
 [`integrations/agentmeter_runtime.lock.json`](../integrations/agentmeter_runtime.lock.json).
 
 Use a dedicated virtual environment for this runtime. The lock also records
