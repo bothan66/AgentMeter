@@ -27,15 +27,19 @@ failure recovery. Changing the harness can change the same model's execution
 trajectory. The wording of a task can also favor some pairs over others.
 AgentMeter makes both choices explicit in quality–efficiency evaluation.
 
+<p align="center">
+  <img src="docs/assets/figure1_overview.png" width="1100" alt="Figure 1: AMS combines task quality, budget-conditioned quality and costly failures; Core30 results show that the best CLI depends on the model.">
+</p>
+
+**Figure 1.** AgentMeter evaluates complete model–CLI configurations.
+The paper's original panels show **why quality and cost must be considered
+together** and **why the best harness depends on the model**.
+
 | Contribution | What it makes measurable |
 |:--|:--|
 | **Evaluate the pair** | An 80-task benchmark and a balanced 30-task Core Subset for comparing **7 models × 4 harnesses**. |
 | **AgentMeter Score (AMS)** | Graded task quality, quality within calibrated cost budgets, and expensive zero-reward execution. |
 | **AgentMeter-Opt** | Trajectory-guided description construction followed by evaluation on the **same source-balanced description set** for every target. |
-
-<p align="center">
-  <img src="docs/assets/agentmeter_opt_pipeline.png" width="1000" alt="AgentMeter-Opt uses public requirements and source trajectories to construct descriptions, screens task preservation, and evaluates all target pairs on a shared description set.">
-</p>
 
 For each task and source pair, AgentMeter-Opt uses the Original trajectory
 to propose clarifications. Candidates are screened for task preservation and
@@ -197,6 +201,10 @@ All commands also work as `python -m agentmeter`. The
 external task directories and validation.
 
 ## A description adaptation
+
+<p align="center">
+  <img src="docs/assets/agentmeter_opt_pipeline.png" width="1000" alt="AgentMeter-Opt uses public requirements and source trajectories to construct descriptions, screens task preservation, and evaluates all target pairs on a shared description set.">
+</p>
 
 **Four tasks, with all four source rewrites for each.**
 
